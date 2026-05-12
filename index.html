@@ -2,10 +2,10 @@
 <html lang="fi">
 <head>
     <meta property="og:type" content="website">
-<meta property="og:title" content="Sisu Game Päivitetty">
-<meta property="og:description" content="Tervetuloa moninpeli sisugameen josa voi naurattaa ja kaikkee hasua!">
-<meta property="og:image" content="https://i.ibb.co/bMNLTFKg/Gemini-Generated-Image-6j4e356j4e356j4e.png">
-<meta property="og:url" content="https://sinun-sivusi-osoite.github.io/"> <meta name="theme-color" content="#FFD700"> <meta name="twitter:card" content="summary_large_image">
+    <meta property="og:title" content="Sisu Game Päivitetty">
+    <meta property="og:description" content="Tervetuloa moninpeli sisugameen josa voi naurattaa ja kaikkee hasua!">
+    <meta property="og:image" content="https://i.ibb.co/bMNLTFKg/Gemini-Generated-Image-6j4e356j4e356j4e.png">
+    <meta name="theme-color" content="#FFD700">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>sisugame sisu peli tosi hassu</title>
@@ -70,12 +70,12 @@
         .death-text { color: red; font-size: 50px; animation: shake 0.1s infinite; text-align: center; }
         @keyframes shake { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-2px, -3px); } 100% { transform: translate(2px, 1px); } }
 
-        canvas { display: block; background: #ffffff; cursor: crosshair; }
+        canvas { display: block; background: #87CEEB; cursor: crosshair; }
     </style>
 </head>
 <body>
 
-    <button id="delete-acc-btn" style="display:none;">päävalikko </button>
+    <button id="delete-acc-btn" style="display:none;">Päävalikko</button>
     <div id="online-counter">Online: 0</div>
     <audio id="global-music" loop></audio>
 
@@ -95,7 +95,7 @@
 
     <div id="death-screen" style="display:none;">
         <h1 class="death-text">kuolit hahahahahahahahahahahHAHAHAHAAH</h1>
-        <button onclick="location.reload()" style="padding:20px 40px; font-size: 20px; cursor: pointer;">päävaliko</button>
+        <button onclick="location.reload()" style="padding:20px 40px; font-size: 20px; cursor: pointer;">päävalikko</button>
     </div>
 
     <div id="game-ui" style="display:none;">
@@ -153,7 +153,6 @@
         const bgMusic = document.getElementById('global-music');
         
         let selectedChar = 'stickman';
-        let myData = JSON.parse(localStorage.getItem('sisu_user_vfinal')) || null;
         let players = {};
         let blocks = {};
         let myBullets = [];
@@ -168,7 +167,6 @@
         document.getElementById('login-btn').onclick = async () => {
             const rawName = document.getElementById('username-input').value.trim();
             if (!rawName || rawName.length > 20) return;
-
             const snap = await get(ref(db, 'usernames'));
             if (snap.exists()) {
                 for (let n in snap.val()) {
@@ -178,26 +176,32 @@
                     }
                 }
             }
-
-            myData = { id: "u_" + Date.now(), name: rawName, char: selectedChar };
-            localStorage.setItem('sisu_user_vfinal', JSON.stringify(myData));
-            set(ref(db, `usernames/${rawName}`), myData.id);
+            const userData = { id: "u_" + Date.now(), name: rawName, char: selectedChar };
+            localStorage.setItem('sisu_user_vfinal', JSON.stringify(userData));
+            set(ref(db, `usernames/${rawName}`), userData.id);
             onDisconnect(ref(db, `usernames/${rawName}`)).remove();
-            initGame();
+            initGame(userData);
         };
 
         document.getElementById('delete-acc-btn').onclick = () => {
-            if(myData) {
-                remove(ref(db, `usernames/${myData.name}`));
-                remove(ref(db, `players/${myData.id}`));
-            }
             localStorage.removeItem('sisu_user_vfinal');
             location.reload();
         };
 
-        if (myData) initGame();
+        const savedData = JSON.parse(localStorage.getItem('sisu_user_vfinal'));
+        if (savedData) initGame(savedData);
 
-        function initGame() {
+        function drawMario(ctx, x, y) {
+            ctx.fillStyle = "red"; ctx.fillRect(x + 5, y, 30, 10); ctx.fillRect(x + 5, y - 5, 20, 5); // Lakki
+            ctx.fillStyle = "#FFCC99"; ctx.fillRect(x + 8, y + 10, 24, 20); // Kasvot
+            ctx.fillStyle = "black"; ctx.fillRect(x + 22, y + 14, 4, 4); ctx.fillRect(x + 18, y + 22, 10, 4); // Viikset
+            ctx.fillStyle = "red"; ctx.fillRect(x + 5, y + 30, 30, 20); // Paita
+            ctx.fillStyle = "blue"; ctx.fillRect(x + 5, y + 50, 30, 25); // Haalarit
+            ctx.fillStyle = "yellow"; ctx.fillRect(x + 10, y + 55, 5, 5); ctx.fillRect(x + 25, y + 55, 5, 5); // Napit
+            ctx.fillStyle = "#663300"; ctx.fillRect(x + 2, y + 75, 12, 8); ctx.fillRect(x + 26, y + 75, 12, 8); // Kengät
+        }
+
+        function initGame(myData) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('game-ui').style.display = 'block';
             document.getElementById('delete-acc-btn').style.display = 'block';
@@ -210,7 +214,8 @@
             canvas.height = window.innerHeight;
 
             const pRef = ref(db, `players/${myData.id}`);
-            let pLocal = { x: 300, y: 100, vx: 0, vy: 0, facing: 1, walking: false, frame: 0, slot: 1, char: myData.char, dead: false };
+            // SPAWN POSITION: Keskellä kultaisen laatan päällä
+            let pLocal = { x: canvas.width / 2 - 20, y: canvas.height - 180, vx: 0, vy: 0, facing: 1, walking: false, slot: 1, char: myData.char, dead: false };
             set(pRef, { ...pLocal, name: myData.name });
             onDisconnect(pRef).remove();
 
@@ -221,20 +226,12 @@
             });
             onValue(ref(db, 'blocks'), s => blocks = s.val() || {});
             
-            // Music Sync
             onValue(ref(db, 'server/music'), s => {
                 const m = s.val(); if(!m) return;
                 if(bgMusic.src !== m.file) bgMusic.src = m.file;
                 m.playing ? bgMusic.play().catch(()=>{}) : bgMusic.pause();
                 if(Math.abs(bgMusic.currentTime - m.time) > 2) bgMusic.currentTime = m.time;
             });
-
-            if(isOwner) {
-                const mT = document.getElementById('music-toggle'), mS = document.getElementById('music-select'), mK = document.getElementById('music-seek');
-                const upd = () => update(ref(db, 'server/music'), { playing: mT.checked, file: mS.value, time: parseFloat(mK.value) });
-                mT.onchange = upd; mS.onchange = upd; mK.oninput = upd;
-                setInterval(() => { if(mT.checked) update(ref(db, 'server/music'), {time: bgMusic.currentTime}); }, 2000);
-            }
 
             const keys = {};
             window.onkeydown = (e) => {
@@ -277,6 +274,10 @@
                 lastAction = Date.now();
                 let tx = Math.floor((pLocal.x + (pLocal.facing * 75)) / 20) * 20;
                 let ty = Math.floor(pLocal.y / 20) * 20;
+
+                // SPAWN PROTECTION: Estä rakentaminen keskelle (spawn-alue)
+                if (tx > canvas.width / 2 - 100 && tx < canvas.width / 2 + 100) return;
+
                 if (pLocal.slot === 3) {
                     for(let id in blocks) if(Math.abs(tx-blocks[id].x)<50 && Math.abs(ty-blocks[id].y)<50) { remove(ref(db, `blocks/${id}`)); break; }
                 } else {
@@ -286,25 +287,16 @@
                 }
             };
 
-            window.onclick = (e) => {
-                if(isOwner && document.getElementById('gun-hack').checked) {
-                    const rect = canvas.getBoundingClientRect();
-                    const angle = Math.atan2(e.clientY - rect.top - (pLocal.y + 40), e.clientX - rect.left - (pLocal.x + 20));
-                    myBullets.push({ x: pLocal.x+20, y: pLocal.y+40, vx: Math.cos(angle)*15, vy: Math.sin(angle)*15 });
-                }
-            };
-
-            function draw(ctx, p, x, y) {
+            function drawPlayer(ctx, p, x, y) {
                 const w = Math.sin(Date.now()*0.01)*12;
-                ctx.lineWidth = 4; ctx.strokeStyle = p.char === 'redstickman' ? 'red' : 'black';
-                if(p.char.includes('stickman')) {
+                if(p.char === 'mario') {
+                    drawMario(ctx, x, y);
+                } else if(p.char.includes('stickman')) {
+                    ctx.lineWidth = 4; ctx.strokeStyle = p.char === 'redstickman' ? 'red' : 'black';
                     ctx.beginPath(); ctx.arc(x+20, y+15, 12, 0, 7); ctx.stroke();
                     ctx.moveTo(x+20, y+27); ctx.lineTo(x+20, y+55);
                     ctx.moveTo(x+20, y+55); ctx.lineTo(x+20+w, y+80);
                     ctx.moveTo(x+20, y+55); ctx.lineTo(x+20-w, y+80); ctx.stroke();
-                } else if(p.char === 'mario') {
-                    ctx.fillStyle = "red"; ctx.fillRect(x+5, y+5, 30, 25);
-                    ctx.fillStyle = "blue"; ctx.fillRect(x+5, y+45, 30, 35);
                 } else {
                     ctx.fillStyle = "pink"; ctx.beginPath(); ctx.moveTo(x+20, y+15); ctx.lineTo(x-10, y+80); ctx.lineTo(x+50, y+80); ctx.fill();
                 }
@@ -331,21 +323,26 @@
                 update(pRef, { ...pLocal, name: myData.name });
 
                 ctx.clearRect(0,0,canvas.width,canvas.height);
-                ctx.fillStyle = "#333"; ctx.fillRect(0, G, canvas.width, 100);
-                for(let id in blocks) {
-                    ctx.fillStyle = blocks[id].type === 'Wood' ? '#8B4513' : '#555';
-                    ctx.fillRect(blocks[id].x, blocks[id].y, BLOCK_SIZE, BLOCK_SIZE);
-                    ctx.strokeRect(blocks[id].x, blocks[id].y, BLOCK_SIZE, BLOCK_SIZE);
-                }
-                for(let id in players) if(id !== myId) draw(ctx, players[id], players[id].x, players[id].y);
-                draw(ctx, pLocal, pLocal.x, pLocal.y);
+                
+                // LATTIA
+                ctx.fillStyle = "#228B22"; ctx.fillRect(0, G, canvas.width, 100);
+                
+                // KULTAINEN SPAWN-ALUE
+                ctx.fillStyle = "#FFD700";
+                ctx.fillRect(canvas.width / 2 - 100, G - 10, 200, 20);
+                ctx.strokeRect(canvas.width / 2 - 100, G - 10, 200, 20);
+                ctx.fillStyle = "black"; ctx.font = "bold 12px Tahoma";
+                ctx.fillText("SPAWN - NO BUILDING", canvas.width / 2, G + 15);
 
-                myBullets.forEach((b, i) => {
-                    b.x += b.vx; b.y += b.vy; ctx.fillStyle = "red"; ctx.fillRect(b.x, b.y, 10, 10);
-                    for(let pid in players) if(pid !== myId && b.x > players[pid].x && b.x < players[pid].x+PLAYER_W && b.y > players[pid].y && b.y < players[pid].y+PLAYER_H) {
-                        update(ref(db, `players/${pid}`), {dead: true}); myBullets.splice(i, 1);
-                    }
-                });
+                for(let id in blocks) {
+                    let b = blocks[id];
+                    ctx.fillStyle = b.type === 'Wood' ? '#8B4513' : '#555';
+                    ctx.fillRect(b.x, b.y, BLOCK_SIZE, BLOCK_SIZE);
+                    ctx.strokeRect(b.x, b.y, BLOCK_SIZE, BLOCK_SIZE);
+                }
+                for(let id in players) if(id !== myData.id) drawPlayer(ctx, players[id], players[id].x, players[id].y);
+                drawPlayer(ctx, pLocal, pLocal.x, pLocal.y);
+
                 requestAnimationFrame(loop);
             }
             loop();
