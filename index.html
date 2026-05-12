@@ -1,126 +1,132 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>uwu - Deluxe</title>
+    <title>Sisu Game Päivitetty</title>
     <style>
         body {
-            margin: 0;
-            background-color: #f0f0f0; 
-            color: #121212;
-            font-family: 'Tahoma', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow: hidden;
+            margin: 0; background-color: #f0f0f0; color: #121212;
+            font-family: 'Tahoma', sans-serif; overflow: hidden;
         }
         
-        #login-screen {
-            position: absolute;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
+        /* RAINBOW COUNTER */
+        #online-counter {
+            position: absolute; top: 10px; right: 20px;
+            font-family: 'Comic Sans MS', 'Tahoma', sans-serif;
+            font-size: 32px; font-weight: bold; z-index: 50;
+            animation: rainbow-text 3s linear infinite;
         }
 
-        #login-title {
-            font-size: 48px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
-            background-size: 400%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: rainbow 5s linear infinite;
+        /* UI PANELS */
+        #login-screen, #death-screen {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: white; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 100;
         }
-        @keyframes rainbow { 0% { background-position: 0% 50%; } 100% { background-position: 400% 50%; } }
-        
-        #game-ui { display: none; position: relative; width: 100vw; height: 100vh; }
-        
-        canvas {
-            background-color: #ffffff;
-            display: block;
+        #delete-acc-btn {
+            position: absolute; top: 10px; left: 10px;
+            background: #ff4444; color: white; border: none; padding: 10px;
+            cursor: pointer; font-weight: bold; z-index: 101;
         }
 
-        /* CHAT STYLES */
+        /* CHAT */
         #chat-container {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            width: 300px;
-            height: 250px;
-            background: rgba(255, 255, 255, 0.8);
-            border: 2px solid #333;
-            display: flex;
-            flex-direction: column;
-            border-radius: 5px;
+            position: absolute; bottom: 20px; left: 20px;
+            width: 350px; height: 300px; background: rgba(0, 0, 0, 0.9);
+            display: flex; flex-direction: column; z-index: 60;
         }
-        #chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 5px;
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-        }
-        #typing-indicator {
-            height: 15px;
-            font-size: 11px;
-            font-style: italic;
-            padding-left: 5px;
-            color: #555;
-        }
-        #chat-input {
-            border: none;
-            border-top: 1px solid #ccc;
-            padding: 8px;
-            outline: none;
+        #chat-messages { flex: 1; overflow-y: auto; padding: 10px; color: white; font-size: 13px; }
+        #chat-input-row { display: flex; background: #222; }
+        #chat-input { flex: 1; background: transparent; border: none; color: white; padding: 10px; outline: none; }
+        
+        #chat-customizer {
+            background: #333; padding: 5px; display: flex; gap: 5px; flex-wrap: wrap;
         }
 
-        #controls-hint {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255,255,255,0.7);
-            padding: 5px 15px;
-            border-radius: 20px;
-            pointer-events: none;
+        /* ADMIN MENU */
+        #admin-panel {
+            position: absolute; top: 50px; left: 10px;
+            background: #1a1a1a; border: 2px solid #333; color: #0f0;
+            padding: 10px; display: none; z-index: 70; font-family: monospace;
         }
 
-        input { padding: 10px; font-size: 18px; border: 2px solid #ccc; border-radius: 5px; margin-bottom: 10px; }
-        button { padding: 10px 20px; font-size: 18px; cursor: pointer; background-color: #121212; color: white; border: none; border-radius: 5px; }
+        canvas { display: block; background: #fff; }
+
+        @keyframes rainbow-text {
+            0% { color: red; } 20% { color: orange; } 40% { color: yellow; }
+            60% { color: green; } 80% { color: blue; } 100% { color: red; }
+        }
+        @keyframes fire-slide {
+            from { background-position: 0% 50%; } to { background-position: 100% 50%; }
+        }
+        .death-text { color: red; font-weight: bold; animation: shake 0.2s infinite; font-size: 40px; }
+        @keyframes shake { 0% { transform: translate(0,0); } 50% { transform: translate(2px, 2px); } 100% { transform: translate(-2px, -2px); } }
+        
+        .gold-tag {
+            background: linear-gradient(90deg, #ffd700, #fff, #ffd700);
+            background-size: 200% auto; -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent; animation: fire-slide 2s linear infinite;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
+    <button id="delete-acc-btn" style="display:none;">DELETE ACCOUNT</button>
+    <div id="online-counter">Online: 1</div>
+
     <div id="login-screen">
-        <div id="login-title">sisu game päivitetty</div>
-        <input type="text" id="username-input" placeholder="Enter Username..." maxlength="12">
-        <button id="login-btn">pelaa Game</button>
-        <div id="error-msg"></div>
+        <h1 style="font-family: 'Comic Sans MS'">Sisu Game Päivitetty</h1>
+        <input type="text" id="username-input" placeholder="Username (A-Z, 0-9, Ä, Ö)..." maxlength="20">
+        <div style="margin: 10px;">
+            <label>Choose Character Color:</label>
+            <input type="color" id="char-color" value="#0000ff">
+        </div>
+        <button id="login-btn">Start Game</button>
+        <p id="error-msg" style="color:red"></p>
     </div>
 
-    <div id="game-ui">
-        <div id="controls-hint">
-            <b>1</b>: Wood | <b>2</b>: Stone | <b>3</b>: Delete | <b>Right-Click</b>: Action | <b>Enter</b>: Chat
+    <div id="death-screen" style="display:none;">
+        <h1 class="death-text">kuolit hahahahahahahahahahahHAHAHAHAAH</h1>
+        <button onclick="location.reload()">RESPAWN</button>
+        <button id="death-delete-btn" style="margin-top:20px; background:red; color:white;">DELETE ACCOUNT</button>
+    </div>
+
+    <div id="game-ui" style="display:none;">
+        <div id="admin-panel">
+            <b>[ADMIN MENU]</b><br>
+            <label><input type="checkbox" id="fly-hack"> Fly Hack</label><br>
+            <label><input type="checkbox" id="gun-hack"> Gun Hack</label>
         </div>
-        <canvas id="gameCanvas"></canvas>
-        
+
         <div id="chat-container">
             <div id="chat-messages"></div>
-            <div id="typing-indicator"></div>
-            <input type="text" id="chat-input" placeholder="Press Enter to chat..." maxlength="100">
+            <div id="chat-customizer">
+                <select id="font-select">
+                    <option value="Tahoma">Tahoma</option>
+                    <option value="'Comic Sans MS'">Comic Sans</option>
+                    <option value="Arial">Arial</option>
+                    <option value="Courier New">Retro</option>
+                </select>
+                <select id="color-select">
+                    <option value="white">White</option>
+                    <option value="pink">Pink</option>
+                    <option value="cyan">Blue</option>
+                    <option value="#0f0">Green</option>
+                    <option value="rainbow">Rainbow</option>
+                </select>
+            </div>
+            <div id="chat-input-row">
+                <input type="text" id="chat-input" placeholder="Press Enter to chat...">
+            </div>
         </div>
+        <canvas id="gameCanvas"></canvas>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, set, get, onValue, onDisconnect, push, remove, update as fbUpdate } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, set, onValue, onDisconnect, push, remove, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBvqYVI8UT4jZVHdj-1sT2cAYQYFzMbZ1k",
@@ -132,257 +138,284 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- UI LOGIC ---
-        let myUsername = "";
-        let playerId = "";
-        const loginBtn = document.getElementById("login-btn");
-        const usernameInput = document.getElementById("username-input");
+        // --- CONSTANTS ---
+        const BLOCK_SIZE = 60;
+        const PLAYER_W = 40;
+        const PLAYER_H = 80; // Character is 2 blocks high roughly
+        const GRAVITY = 0.4;
+        const FRICTION = 0.8;
 
-        loginBtn.addEventListener("click", async () => {
-            const desiredName = usernameInput.value.trim();
-            if (desiredName.length < 2) return;
-            myUsername = desiredName;
-            playerId = "user_" + Date.now();
-            document.getElementById("login-screen").style.display = "none";
-            document.getElementById("game-ui").style.display = "block";
-            startGame();
-        });
+        let myData = JSON.parse(localStorage.getItem('sisu_user')) || null;
+        let players = {};
+        let worldBlocks = {};
+        let myBullets = [];
 
-        function startGame() {
-            const canvas = document.getElementById("gameCanvas");
-            const ctx = canvas.getContext("2d");
+        // --- DOM ELEMENTS ---
+        const loginScreen = document.getElementById('login-screen');
+        const gameUI = document.getElementById('game-ui');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const counter = document.getElementById('online-counter');
+
+        // --- LOGIN LOGIC ---
+        document.getElementById('login-btn').onclick = async () => {
+            const rawName = document.getElementById('username-input').value.trim();
+            const color = document.getElementById('char-color').value;
+            const regex = /^[a-zA-Z0-9ääööÄÄÖÖ]+$/;
+
+            if (!regex.test(rawName) || rawName.length > 20) {
+                document.getElementById('error-msg').innerText = "Invalid Name (Max 20, Letters/Numbers only)";
+                return;
+            }
+
+            // Check if taken
+            const userRef = ref(db, `usernames/${rawName}`);
+            onValue(userRef, (snap) => {
+                if (snap.exists() && !myData) {
+                    document.getElementById('error-msg').innerText = "Name Taken!";
+                } else {
+                    myData = { id: "u_" + Date.now(), name: rawName, color: color };
+                    localStorage.setItem('sisu_user', JSON.stringify(myData));
+                    set(userRef, myData.id);
+                    onDisconnect(userRef).remove();
+                    initGame();
+                }
+            }, { onlyOnce: true });
+        };
+
+        const deleteAccount = () => {
+            if (myData) {
+                remove(ref(db, `usernames/${myData.name}`));
+                remove(ref(db, `players/${myData.id}`));
+                localStorage.removeItem('sisu_user');
+                location.reload();
+            }
+        };
+        document.getElementById('delete-acc-btn').onclick = deleteAccount;
+        document.getElementById('death-delete-btn').onclick = deleteAccount;
+
+        if (myData) initGame();
+
+        function initGame() {
+            loginScreen.style.display = 'none';
+            gameUI.style.display = 'block';
+            document.getElementById('delete-acc-btn').style.display = 'block';
+            if (myData.name === "eelaska") document.getElementById('admin-panel').style.display = 'block';
+
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
-            const BLOCK_SIZE = 40;
-            const PLAYER_SIZE = 45;
-            
-            let myPlayer = {
-                id: playerId,
-                username: myUsername,
-                x: 400, y: 100,
-                color: `hsl(${Math.random() * 360}, 70%, 40%)`,
-                facingRight: true,
-                dy: 0,
-                walking: false,
-                walkFrame: 0,
-                equipped: "None",
-                isTyping: false
+            let player = {
+                x: 100, y: 100, vx: 0, vy: 0, 
+                facing: 1, walking: false, frame: 0,
+                equipped: "Wood", font: "Tahoma", chatCol: "white"
             };
 
-            let players = {};
-            let worldBlocks = {};
-            let selectedTool = 1; // 1: Wood, 2: Stone, 3: Delete
+            const pRef = ref(db, `players/${myData.id}`);
+            onDisconnect(pRef).remove();
 
-            const myPlayerRef = ref(db, `players/${playerId}`);
-            set(myPlayerRef, myPlayer);
-            onDisconnect(myPlayerRef).remove();
-
-            onValue(ref(db, `players`), (snap) => players = snap.val() || {});
-            onValue(ref(db, `blocks`), (snap) => worldBlocks = snap.val() || {});
-
-            // --- CHAT LOGIC ---
-            const chatInput = document.getElementById("chat-input");
-            const chatBox = document.getElementById("chat-messages");
-            const typingDiv = document.getElementById("typing-indicator");
-
-            chatInput.addEventListener("input", () => {
-                if (!myPlayer.isTyping) {
-                    myPlayer.isTyping = true;
-                    fbUpdate(myPlayerRef, { isTyping: true });
-                }
-                if(chatInput.value === "") {
-                    myPlayer.isTyping = false;
-                    fbUpdate(myPlayerRef, { isTyping: false });
+            // Sync
+            onValue(ref(db, 'players'), s => { 
+                players = s.val() || {};
+                counter.innerText = "Online: " + Object.keys(players).length;
+                if (players[myData.id] && players[myData.id].dead) {
+                    document.getElementById('death-screen').style.display = 'flex';
                 }
             });
+            onValue(ref(db, 'blocks'), s => worldBlocks = s.val() || {});
 
-            chatInput.addEventListener("keydown", (e) => {
-                if (e.key === "Enter" && chatInput.value.trim() !== "") {
-                    const now = new Date();
-                    const timestamp = `[${now.toLocaleDateString()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}]`;
-                    const msgRef = push(ref(db, "chat"));
-                    set(msgRef, {
-                        user: myUsername,
-                        text: chatInput.value,
-                        time: timestamp
+            // Keys
+            const keys = {};
+            window.onkeydown = (e) => {
+                if (document.activeElement.id === 'chat-input') return;
+                keys[e.key.toLowerCase()] = true;
+                if (e.key === '1') player.equipped = "Wood";
+                if (e.key === '2') player.equipped = "Stone";
+                if (e.key === '3') player.equipped = "Eraser";
+            };
+            window.onkeyup = (e) => keys[e.key.toLowerCase()] = false;
+
+            // Chat
+            const chatInput = document.getElementById('chat-input');
+            chatInput.onkeydown = (e) => {
+                if (e.key === 'Enter' && chatInput.value.trim()) {
+                    const msg = chatInput.value;
+                    const time = new Date().toLocaleTimeString();
+                    push(ref(db, 'chat'), {
+                        sender: myData.name,
+                        text: msg,
+                        time: time,
+                        color: player.chatCol,
+                        font: player.font,
+                        isAdmin: myData.name === "eelaska"
                     });
                     chatInput.value = "";
-                    myPlayer.isTyping = false;
-                    fbUpdate(myPlayerRef, { isTyping: false });
                 }
+            };
+
+            onValue(ref(db, 'chat'), s => {
+                const box = document.getElementById('chat-messages');
+                box.innerHTML = "";
+                Object.values(s.val() || {}).slice(-20).forEach(m => {
+                    const d = document.createElement('div');
+                    const isRainbow = m.color === 'rainbow' ? 'animation: rainbow-text 1s infinite;' : `color: ${m.color};`;
+                    const tag = m.isAdmin ? '<span class="gold-tag">[OWNER]</span> ' : '';
+                    d.innerHTML = `<small>${m.time}</small> ${tag}<b>${m.sender}:</b> <span style="font-family:${m.font}; ${isRainbow}">${m.text}</span>`;
+                    box.appendChild(d);
+                });
+                box.scrollTop = box.scrollHeight;
             });
 
-            onValue(ref(db, "chat"), (snap) => {
-                chatBox.innerHTML = "";
-                const msgs = snap.val();
-                if (msgs) {
-                    Object.values(msgs).slice(-15).forEach(m => {
-                        const div = document.createElement("div");
-                        div.innerHTML = `<span style="color:#888">${m.time}</span> <b>${m.user}:</b> ${m.text}`;
-                        chatBox.appendChild(div);
-                    });
-                    chatBox.scrollTop = chatBox.scrollHeight;
+            document.getElementById('color-select').onchange = (e) => player.chatCol = e.target.value;
+            document.getElementById('font-select').onchange = (e) => player.font = e.target.value;
+
+            // SHOOTING
+            window.onclick = (e) => {
+                if (document.getElementById('gun-hack').checked && myData.name === "eelaska") {
+                    const rect = canvas.getBoundingClientRect();
+                    const tx = e.clientX - rect.left;
+                    const ty = e.clientY - rect.top;
+                    const angle = Math.atan2(ty - (player.y + 40), tx - (player.x + 20));
+                    myBullets.push({ x: player.x + 20, y: player.y + 40, vx: Math.cos(angle) * 10, vy: Math.sin(angle) * 10 });
                 }
-            });
+            };
 
-            // --- INPUTS ---
-            const keys = {};
-            window.addEventListener("keydown", (e) => {
-                if (document.activeElement === chatInput) return;
-                keys[e.key.toLowerCase()] = true;
-                if (e.key === '1') { selectedTool = 1; myPlayer.equipped = "Wood"; }
-                if (e.key === '2') { selectedTool = 2; myPlayer.equipped = "Stone"; }
-                if (e.key === '3') { selectedTool = 3; myPlayer.equipped = "Eraser"; }
-                fbUpdate(myPlayerRef, { equipped: myPlayer.equipped });
-            });
-            window.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
-
-            canvas.addEventListener("contextmenu", (e) => {
+            window.oncontextmenu = (e) => {
                 e.preventDefault();
-                const targetX = myPlayer.facingRight ? myPlayer.x + PLAYER_SIZE + 5 : myPlayer.x - BLOCK_SIZE - 5;
-                const targetY = myPlayer.y + 5;
-
-                if (selectedTool === 3) {
-                    for (let id in worldBlocks) {
+                const tx = player.x + (player.facing * (BLOCK_SIZE + 10));
+                const ty = player.y + 10;
+                
+                if (player.equipped === "Eraser") {
+                    for(let id in worldBlocks) {
                         let b = worldBlocks[id];
-                        if (targetX < b.x + BLOCK_SIZE && targetX + 10 > b.x && targetY < b.y + BLOCK_SIZE && targetY + 10 > b.y) {
-                            remove(ref(db, `blocks/${id}`));
-                            break;
+                        if (tx > b.x && tx < b.x + BLOCK_SIZE && ty > b.y && ty < b.y + BLOCK_SIZE) {
+                            remove(ref(db, `blocks/${id}`)); return;
                         }
                     }
                 } else {
-                    let type = selectedTool === 1 ? 'wood' : 'stone';
-                    let finalY = targetY;
-                    
-                    // Logic: Stack if something is there
-                    for (let id in worldBlocks) {
-                        let b = worldBlocks[id];
-                        if (Math.abs(targetX - b.x) < 20 && Math.abs(targetY - b.y) < 20) {
-                            finalY = b.y - BLOCK_SIZE;
-                        }
-                    }
-
-                    const newBlockRef = push(ref(db, `blocks`));
-                    set(newBlockRef, { x: targetX, y: finalY, type: type });
+                    const bRef = push(ref(db, 'blocks'));
+                    set(bRef, { x: tx, y: ty, type: player.equipped, vy: 0 });
                 }
-            });
+            };
 
-            function drawStickman(ctx, x, y, color, isWalking, frame, facingRight) {
-                ctx.strokeStyle = color;
-                ctx.lineWidth = 3;
-                ctx.beginPath();
+            function drawPlayer(ctx, p, color, name) {
+                // Stickman logic improved
+                ctx.strokeStyle = color; ctx.lineWidth = 4;
+                const frame = p.walking ? Math.sin(p.frame * 0.2) * 15 : 0;
+                
                 // Head
-                ctx.arc(x + 15, y + 10, 8, 0, Math.PI * 2);
+                ctx.beginPath(); ctx.arc(p.x + 20, p.y + 15, 12, 0, Math.PI * 2); ctx.stroke();
                 // Body
-                ctx.moveTo(x + 15, y + 18); ctx.lineTo(x + 15, y + 32);
+                ctx.beginPath(); ctx.moveTo(p.x + 20, p.y + 27); ctx.lineTo(p.x + 20, p.y + 55); ctx.stroke();
                 // Arms
-                let armWaver = isWalking ? Math.sin(frame * 0.2) * 10 : 0;
-                ctx.moveTo(x + 15, y + 22); ctx.lineTo(x + 15 + (facingRight ? 10 : -10), y + 25 + armWaver);
-                ctx.moveTo(x + 15, y + 22); ctx.lineTo(x + 15 - (facingRight ? 10 : -10), y + 25 - armWaver);
+                ctx.beginPath(); ctx.moveTo(p.x + 20, p.y + 35); ctx.lineTo(p.x + 20 + (p.facing * 15), p.y + 45 + frame); ctx.stroke();
                 // Legs
-                let legMove = isWalking ? Math.sin(frame * 0.2) * 12 : 0;
-                ctx.moveTo(x + 15, y + 32); ctx.lineTo(x + 15 + legMove, y + 45);
-                ctx.moveTo(x + 15, y + 32); ctx.lineTo(x + 15 - legMove, y + 45);
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(p.x + 20, p.y + 55); ctx.lineTo(p.x + 20 + frame, p.y + 80); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(p.x + 20, p.y + 55); ctx.lineTo(p.x + 20 - frame, p.y + 80); ctx.stroke();
+
+                // Name
+                ctx.fillStyle = "black"; ctx.font = "14px Tahoma"; ctx.textAlign = "center";
+                const isAdmin = name === "eelaska";
+                if (isAdmin) {
+                    ctx.fillStyle = "gold";
+                    ctx.fillText("[OWNER]", p.x + 20, p.y - 25);
+                }
+                ctx.fillStyle = "grey"; ctx.font = "10px Tahoma";
+                ctx.fillText(`[${p.equipped}]`, p.x + 20, p.y - 12);
+                ctx.fillStyle = "black"; ctx.font = "bold 14px Tahoma";
+                ctx.fillText(name, p.x + 20, p.y - 2);
             }
 
-            // --- MAIN LOOP ---
-            const speed = 4.5;
-            const gravity = 0.5;
+            function loop() {
+                // Movement
+                const isFlying = document.getElementById('fly-hack').checked && myData.name === "eelaska";
+                
+                if (keys['a']) { player.vx = -4; player.facing = -1; player.walking = true; }
+                else if (keys['d']) { player.vx = 4; player.facing = 1; player.walking = true; }
+                else { player.vx *= FRICTION; player.walking = false; }
 
-            function update() {
-                let moved = false;
-                myPlayer.walking = false;
-
-                if (keys["a"]) { 
-                    myPlayer.x -= speed; 
-                    myPlayer.facingRight = false; 
-                    myPlayer.walking = true;
-                    moved = true; 
-                }
-                if (keys["d"]) { 
-                    myPlayer.x += speed; 
-                    myPlayer.facingRight = true; 
-                    myPlayer.walking = true;
-                    moved = true; 
+                if (isFlying) {
+                    if (keys['w']) player.vy = -4;
+                    else if (keys['s']) player.vy = 4;
+                    else player.vy = 0;
+                } else {
+                    player.vy += GRAVITY;
                 }
 
-                myPlayer.dy += gravity;
-                myPlayer.y += myPlayer.dy;
+                player.x += player.vx;
+                player.y += player.vy;
 
-                // Collisions & Physics
-                let onGround = false;
-                if (myPlayer.y >= canvas.height - PLAYER_SIZE) {
-                    myPlayer.y = canvas.height - PLAYER_SIZE;
-                    myPlayer.dy = 0;
-                    onGround = true;
+                // Collisions (Floor)
+                if (player.y > canvas.height - PLAYER_H) {
+                    player.y = canvas.height - PLAYER_H;
+                    player.vy = 0;
                 }
+                if (keys['w'] && player.vy === 0 && !isFlying) player.vy = -10;
 
+                // Block Physics & Collision
                 for (let id in worldBlocks) {
                     let b = worldBlocks[id];
-                    // Stand on top
-                    if (myPlayer.x + 20 > b.x && myPlayer.x + 10 < b.x + BLOCK_SIZE) {
-                        if (myPlayer.y + PLAYER_SIZE > b.y && myPlayer.y + PLAYER_SIZE < b.y + 15 && myPlayer.dy >= 0) {
-                            myPlayer.y = b.y - PLAYER_SIZE;
-                            myPlayer.dy = 0;
-                            onGround = true;
-                        }
+                    
+                    // Blocks fall
+                    let supported = b.y >= canvas.height - BLOCK_SIZE;
+                    for (let id2 in worldBlocks) {
+                        let b2 = worldBlocks[id2];
+                        if (id !== id2 && b.x < b2.x + BLOCK_SIZE && b.x + BLOCK_SIZE > b2.x && b.y + BLOCK_SIZE === b2.y) supported = true;
                     }
-                    // Push blocks (visual/logic update)
-                    if (Math.abs(myPlayer.y - b.y) < 20) {
-                        if (myPlayer.x + PLAYER_SIZE > b.x && myPlayer.x < b.x) {
-                             fbUpdate(ref(db, `blocks/${id}`), { x: b.x + 2 });
-                        } else if (myPlayer.x < b.x + BLOCK_SIZE && myPlayer.x > b.x) {
-                             fbUpdate(ref(db, `blocks/${id}`), { x: b.x - 2 });
+                    if (!supported) {
+                        b.y += 2;
+                        update(ref(db, `blocks/${id}`), { y: b.y });
+                    }
+
+                    // Player vs Block (Solid)
+                    if (player.x < b.x + BLOCK_SIZE && player.x + PLAYER_W > b.x && player.y < b.y + BLOCK_SIZE && player.y + PLAYER_H > b.y) {
+                        // Push
+                        if (player.y + PLAYER_H - 10 > b.y && player.y < b.y + BLOCK_SIZE - 10) {
+                            if (player.vx > 0) b.x += 2; else b.x -= 2;
+                            update(ref(db, `blocks/${id}`), { x: b.x });
+                            player.x -= player.vx; 
+                        } else if (player.vy > 0) { // Top collision
+                            player.y = b.y - PLAYER_H;
+                            player.vy = 0;
                         }
                     }
                 }
 
-                if (keys["w"] && onGround) {
-                    myPlayer.dy = -10;
-                    moved = true;
-                }
+                if (player.walking) player.frame++;
+                update(pRef, { ...player, name: myData.name, color: myData.color });
 
-                if (myPlayer.walking) myPlayer.walkFrame++;
-                if (moved || myPlayer.dy !== 0) fbUpdate(myPlayerRef, { x: myPlayer.x, y: myPlayer.y, facingRight: myPlayer.facingRight, walking: myPlayer.walking, walkFrame: myPlayer.walkFrame });
-
-                // Drawing
+                // Draw
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Blocks
                 for (let id in worldBlocks) {
                     let b = worldBlocks[id];
-                    ctx.fillStyle = b.type === 'wood' ? "#8B4513" : "#777";
+                    ctx.fillStyle = b.type === 'Wood' ? '#8B4513' : '#555';
                     ctx.fillRect(b.x, b.y, BLOCK_SIZE, BLOCK_SIZE);
-                    ctx.strokeStyle = "#000";
                     ctx.strokeRect(b.x, b.y, BLOCK_SIZE, BLOCK_SIZE);
                 }
 
-                // Players
-                let typingText = "";
                 for (let id in players) {
-                    const p = players[id];
-                    drawStickman(ctx, p.x, p.y, p.color, p.walking, p.walkFrame, p.facingRight);
-                    
-                    // Nametag + Equipped
-                    ctx.fillStyle = "grey";
-                    ctx.font = "10px Arial";
-                    ctx.textAlign = "center";
-                    ctx.fillText(`[${p.equipped || "None"}]`, p.x + 15, p.y - 22);
-                    
-                    ctx.fillStyle = "black";
-                    ctx.font = "bold 12px Tahoma";
-                    ctx.fillText(p.username, p.x + 15, p.y - 8);
-
-                    if(p.isTyping && id !== playerId) typingText += `${p.username}, `;
+                    if (id !== myData.id) drawPlayer(ctx, players[id], players[id].color, players[id].name);
                 }
-                
-                typingDiv.innerText = typingText ? `${typingText.slice(0, -2)} is typing...` : "";
+                drawPlayer(ctx, player, myData.color, myData.name);
 
-                requestAnimationFrame(update);
+                // Bullets
+                myBullets.forEach((b, i) => {
+                    b.x += b.vx; b.y += b.vy;
+                    ctx.fillStyle = "red"; ctx.fillRect(b.x, b.y, 5, 5);
+                    // Hit detection
+                    for (let pid in players) {
+                        let p = players[pid];
+                        if (pid !== myData.id && b.x > p.x && b.x < p.x + PLAYER_W && b.y > p.y && b.y < p.y + PLAYER_H) {
+                            update(ref(db, `players/${pid}`), { dead: true });
+                            myBullets.splice(i, 1);
+                        }
+                    }
+                });
+
+                requestAnimationFrame(loop);
             }
-            update();
+            loop();
         }
     </script>
 </body>
