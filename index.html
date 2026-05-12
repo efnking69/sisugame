@@ -3,101 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sisu Game Päivitetty</title>
+    <title>Sisu Game Päivitetty - DELUXE</title>
     <style>
-        body {
-            margin: 0; background-color: #f0f0f0; color: #121212;
-            font-family: 'Tahoma', sans-serif; overflow: hidden;
-        }
+        body { margin: 0; background: #f0f0f0; font-family: 'Tahoma', sans-serif; overflow: hidden; }
         
-        /* RAINBOW COUNTER */
-        #online-counter {
-            position: absolute; top: 10px; right: 20px;
+        /* RAINBOW ONLINE COUNTER */
+        #online-counter { 
+            position: absolute; top: 10px; right: 20px; 
+            font-size: 36px; font-weight: bold; z-index: 50; 
             font-family: 'Comic Sans MS', 'Tahoma', sans-serif;
-            font-size: 32px; font-weight: bold; z-index: 50;
-            animation: rainbow-text 3s linear infinite;
+            animation: rainbow-cycle 2s linear infinite; 
+        }
+        @keyframes rainbow-cycle {
+            0% { color: red; } 16% { color: orange; } 33% { color: yellow; }
+            50% { color: green; } 66% { color: blue; } 83% { color: indigo; } 100% { color: red; }
         }
 
         /* UI PANELS */
-        #login-screen, #death-screen {
-            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: white; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 100;
+        #login-screen, #death-screen { 
+            position: absolute; inset: 0; background: white; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; 
         }
         #delete-acc-btn {
             position: absolute; top: 10px; left: 10px;
-            background: #ff4444; color: white; border: none; padding: 10px;
-            cursor: pointer; font-weight: bold; z-index: 101;
+            background: #ff4444; color: white; border: none; padding: 12px;
+            cursor: pointer; font-weight: bold; z-index: 101; border-radius: 0;
         }
 
-        /* CHAT */
-        #chat-container {
-            position: absolute; bottom: 20px; left: 20px;
-            width: 350px; height: 300px; background: rgba(0, 0, 0, 0.9);
-            display: flex; flex-direction: column; z-index: 60;
+        /* HOTBAR */
+        #hotbar {
+            position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 10px; background: rgba(0,0,0,0.9); padding: 10px; border: 2px solid #444; z-index: 60;
         }
-        #chat-messages { flex: 1; overflow-y: auto; padding: 10px; color: white; font-size: 13px; }
-        #chat-input-row { display: flex; background: #222; }
-        #chat-input { flex: 1; background: transparent; border: none; color: white; padding: 10px; outline: none; }
-        
-        #chat-customizer {
-            background: #333; padding: 5px; display: flex; gap: 5px; flex-wrap: wrap;
-        }
+        .slot { width: 60px; height: 60px; border: 2px solid #555; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; position: relative; }
+        .slot.active { border-color: #00ff00; background: rgba(0, 255, 0, 0.2); }
+        .slot span { position: absolute; top: 2px; left: 4px; font-size: 12px; color: #aaa; }
 
-        /* ADMIN MENU */
+        /* SQUARE BLACK CHAT */
+        #chat-container { 
+            position: absolute; bottom: 100px; left: 20px; width: 380px; height: 300px; 
+            background: black; border: 2px solid #333; display: flex; flex-direction: column; z-index: 60; 
+        }
+        #chat-messages { flex: 1; overflow-y: auto; padding: 10px; color: white; font-size: 14px; }
+        #chat-customizer { background: #1a1a1a; padding: 5px; display: flex; gap: 5px; border-top: 1px solid #333; }
+        #chat-input { background: #222; border: none; color: white; padding: 12px; outline: none; width: 100%; box-sizing: border-box; }
+
+        /* CHARACTER SELECT */
+        .char-opt { padding: 15px; border: 3px solid #ccc; cursor: pointer; background: #f9f9f9; transition: 0.2s; }
+        .char-opt:hover { background: #eee; }
+        .char-opt.selected { border-color: #00ff00; background: #e0ffe0; }
+
+        /* ADMIN PANEL (IMGUI STYLE) */
         #admin-panel {
-            position: absolute; top: 50px; left: 10px;
-            background: #1a1a1a; border: 2px solid #333; color: #0f0;
-            padding: 10px; display: none; z-index: 70; font-family: monospace;
+            position: absolute; top: 60px; left: 10px;
+            background: #111; border: 1px solid #0f0; color: #0f0;
+            padding: 15px; display: none; z-index: 70; font-family: 'Courier New', monospace;
+            box-shadow: 5px 5px 0px black;
         }
 
-        canvas { display: block; background: #fff; }
-
-        @keyframes rainbow-text {
-            0% { color: red; } 20% { color: orange; } 40% { color: yellow; }
-            60% { color: green; } 80% { color: blue; } 100% { color: red; }
-        }
-        @keyframes fire-slide {
-            from { background-position: 0% 50%; } to { background-position: 100% 50%; }
-        }
-        .death-text { color: red; font-weight: bold; animation: shake 0.2s infinite; font-size: 40px; }
-        @keyframes shake { 0% { transform: translate(0,0); } 50% { transform: translate(2px, 2px); } 100% { transform: translate(-2px, -2px); } }
-        
+        /* ANIMATIONS */
         .gold-tag {
             background: linear-gradient(90deg, #ffd700, #fff, #ffd700);
             background-size: 200% auto; -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent; animation: fire-slide 2s linear infinite;
+            -webkit-text-fill-color: transparent; animation: gold-slide 2s linear infinite;
             font-weight: bold;
         }
+        @keyframes gold-slide { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        
+        .death-text { color: red; font-size: 45px; animation: shake 0.1s infinite; text-align: center; }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -2px); } 100% { transform: translate(1px, 1px); } }
+
+        canvas { display: block; background: #ffffff; }
     </style>
 </head>
 <body>
 
-    <button id="delete-acc-btn" style="display:none;">DELETE ACCOUNT</button>
-    <div id="online-counter">Online: 1</div>
+    <button id="delete-acc-btn">DELETE ACCOUNT</button>
+    <div id="online-counter">Online: 0</div>
 
     <div id="login-screen">
-        <h1 style="font-family: 'Comic Sans MS'">Sisu Game Päivitetty</h1>
-        <input type="text" id="username-input" placeholder="Username (A-Z, 0-9, Ä, Ö)..." maxlength="20">
-        <div style="margin: 10px;">
-            <label>Choose Character Color:</label>
-            <input type="color" id="char-color" value="#0000ff">
+        <h1 style="font-family: 'Comic Sans MS'; font-size: 40px;">Sisu Game Päivitetty</h1>
+        <input type="text" id="username-input" placeholder="Username (A-Z, 0-9, Ä, Ö)..." maxlength="20" style="padding:10px; width:250px;">
+        
+        <h3>Valitse Hahmo:</h3>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <div class="char-opt selected" onclick="selChar('stickman', this)">Stickman</div>
+            <div class="char-opt" onclick="selChar('redstickman', this)">Red Stick</div>
+            <div class="char-opt" onclick="selChar('mario', this)">Super Mario</div>
+            <div class="char-opt" onclick="selChar('princess', this)">Princess</div>
         </div>
-        <button id="login-btn">Start Game</button>
-        <p id="error-msg" style="color:red"></p>
+
+        <button id="login-btn" style="padding:15px 50px; font-weight:bold; cursor:pointer;">PELAA</button>
+        <p id="error-msg" style="color:red; font-weight:bold;"></p>
     </div>
 
     <div id="death-screen" style="display:none;">
         <h1 class="death-text">kuolit hahahahahahahahahahahHAHAHAHAAH</h1>
-        <button onclick="location.reload()">RESPAWN</button>
-        <button id="death-delete-btn" style="margin-top:20px; background:red; color:white;">DELETE ACCOUNT</button>
+        <button onclick="location.reload()" style="padding:15px 30px;">TEE UUSI TILI</button>
     </div>
 
     <div id="game-ui" style="display:none;">
         <div id="admin-panel">
-            <b>[ADMIN MENU]</b><br>
-            <label><input type="checkbox" id="fly-hack"> Fly Hack</label><br>
-            <label><input type="checkbox" id="gun-hack"> Gun Hack</label>
+            <b>[eelaska cheat menu]</b><hr>
+            <label><input type="checkbox" id="fly-hack"> FLY MODE</label><br>
+            <label><input type="checkbox" id="gun-hack"> ENABLE GUN</label>
         </div>
 
         <div id="chat-container">
@@ -107,7 +116,6 @@
                     <option value="Tahoma">Tahoma</option>
                     <option value="'Comic Sans MS'">Comic Sans</option>
                     <option value="Arial">Arial</option>
-                    <option value="Courier New">Retro</option>
                 </select>
                 <select id="color-select">
                     <option value="white">White</option>
@@ -117,16 +125,20 @@
                     <option value="rainbow">Rainbow</option>
                 </select>
             </div>
-            <div id="chat-input-row">
-                <input type="text" id="chat-input" placeholder="Press Enter to chat...">
-            </div>
+            <input type="text" id="chat-input" placeholder="Kirjoita viesti..." maxlength="200">
+        </div>
+
+        <div id="hotbar">
+            <div class="slot active" id="slot1"><span>1</span>Wood</div>
+            <div class="slot" id="slot2"><span>2</span>Stone</div>
+            <div class="slot" id="slot3"><span>3</span>Eraser</div>
         </div>
         <canvas id="gameCanvas"></canvas>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue, onDisconnect, push, remove, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, set, onValue, onDisconnect, push, remove, update, get } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBvqYVI8UT4jZVHdj-1sT2cAYQYFzMbZ1k",
@@ -138,130 +150,127 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- CONSTANTS ---
+        // --- CONSTANTS & STATE ---
         const BLOCK_SIZE = 60;
         const PLAYER_W = 40;
-        const PLAYER_H = 80; // Character is 2 blocks high roughly
-        const GRAVITY = 0.4;
-        const FRICTION = 0.8;
-
-        let myData = JSON.parse(localStorage.getItem('sisu_user')) || null;
+        const PLAYER_H = 80;
+        const jumpSound = new Audio('https://www.soundjay.com/buttons/sounds/button-10.mp3');
+        
+        let selectedChar = 'stickman';
+        let myData = JSON.parse(localStorage.getItem('sisu_user_v2')) || null;
         let players = {};
-        let worldBlocks = {};
+        let blocks = {};
         let myBullets = [];
+        let lastAction = 0;
+        let lastChat = 0;
 
-        // --- DOM ELEMENTS ---
-        const loginScreen = document.getElementById('login-screen');
-        const gameUI = document.getElementById('game-ui');
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const counter = document.getElementById('online-counter');
+        window.selChar = (type, el) => {
+            selectedChar = type;
+            document.querySelectorAll('.char-opt').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+        };
 
         // --- LOGIN LOGIC ---
         document.getElementById('login-btn').onclick = async () => {
             const rawName = document.getElementById('username-input').value.trim();
-            const color = document.getElementById('char-color').value;
             const regex = /^[a-zA-Z0-9ääööÄÄÖÖ]+$/;
 
             if (!regex.test(rawName) || rawName.length > 20) {
-                document.getElementById('error-msg').innerText = "Invalid Name (Max 20, Letters/Numbers only)";
+                document.getElementById('error-msg').innerText = "Väärä nimi (Max 20, vain kirjaimet/numerot)";
                 return;
             }
 
-            // Check if taken
-            const userRef = ref(db, `usernames/${rawName}`);
-            onValue(userRef, (snap) => {
-                if (snap.exists() && !myData) {
-                    document.getElementById('error-msg').innerText = "Name Taken!";
-                } else {
-                    myData = { id: "u_" + Date.now(), name: rawName, color: color };
-                    localStorage.setItem('sisu_user', JSON.stringify(myData));
-                    set(userRef, myData.id);
-                    onDisconnect(userRef).remove();
-                    initGame();
+            const namesRef = ref(db, 'usernames');
+            const snap = await get(namesRef);
+            let exists = false;
+            if (snap.exists()) {
+                for (let n in snap.val()) {
+                    if (n.toLowerCase() === rawName.toLowerCase()) { exists = true; break; }
                 }
-            }, { onlyOnce: true });
+            }
+
+            if (exists) {
+                document.getElementById('error-msg').innerText = "Nimi varattu!";
+                return;
+            }
+
+            myData = { id: "u_" + Date.now(), name: rawName, char: selectedChar };
+            localStorage.setItem('sisu_user_v2', JSON.stringify(myData));
+            set(ref(db, `usernames/${rawName}`), myData.id);
+            onDisconnect(ref(db, `usernames/${rawName}`)).remove();
+            initGame();
         };
 
-        const deleteAccount = () => {
+        document.getElementById('delete-acc-btn').onclick = () => {
             if (myData) {
                 remove(ref(db, `usernames/${myData.name}`));
                 remove(ref(db, `players/${myData.id}`));
-                localStorage.removeItem('sisu_user');
-                location.reload();
             }
+            localStorage.removeItem('sisu_user_v2');
+            location.reload();
         };
-        document.getElementById('delete-acc-btn').onclick = deleteAccount;
-        document.getElementById('death-delete-btn').onclick = deleteAccount;
 
         if (myData) initGame();
 
         function initGame() {
-            loginScreen.style.display = 'none';
-            gameUI.style.display = 'block';
-            document.getElementById('delete-acc-btn').style.display = 'block';
-            if (myData.name === "eelaska") document.getElementById('admin-panel').style.display = 'block';
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('game-ui').style.display = 'block';
+            if (myData.name.toLowerCase() === "eelaska") document.getElementById('admin-panel').style.display = 'block';
 
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
-            let player = {
-                x: 100, y: 100, vx: 0, vy: 0, 
-                facing: 1, walking: false, frame: 0,
-                equipped: "Wood", font: "Tahoma", chatCol: "white"
-            };
-
             const pRef = ref(db, `players/${myData.id}`);
+            let player = { x: 300, y: 100, vx: 0, vy: 0, facing: 1, walking: false, frame: 0, slot: 1, char: myData.char, font: "Tahoma", chatCol: "white", dead: false };
+            
+            set(pRef, player);
             onDisconnect(pRef).remove();
 
-            // Sync
-            onValue(ref(db, 'players'), s => { 
+            onValue(ref(db, 'players'), s => {
                 players = s.val() || {};
-                counter.innerText = "Online: " + Object.keys(players).length;
-                if (players[myData.id] && players[myData.id].dead) {
+                document.getElementById('online-counter').innerText = "Online: " + Object.keys(players).length;
+                if (players[myData.id]?.dead) {
+                    remove(pRef);
                     document.getElementById('death-screen').style.display = 'flex';
                 }
             });
-            onValue(ref(db, 'blocks'), s => worldBlocks = s.val() || {});
+            onValue(ref(db, 'blocks'), s => blocks = s.val() || {});
 
             // Keys
             const keys = {};
             window.onkeydown = (e) => {
                 if (document.activeElement.id === 'chat-input') return;
                 keys[e.key.toLowerCase()] = true;
-                if (e.key === '1') player.equipped = "Wood";
-                if (e.key === '2') player.equipped = "Stone";
-                if (e.key === '3') player.equipped = "Eraser";
+                if (['1','2','3'].includes(e.key)) {
+                    player.slot = parseInt(e.key);
+                    document.querySelectorAll('.slot').forEach(s => s.classList.remove('active'));
+                    document.getElementById('slot'+e.key).classList.add('active');
+                }
             };
             window.onkeyup = (e) => keys[e.key.toLowerCase()] = false;
 
             // Chat
-            const chatInput = document.getElementById('chat-input');
-            chatInput.onkeydown = (e) => {
-                if (e.key === 'Enter' && chatInput.value.trim()) {
-                    const msg = chatInput.value;
-                    const time = new Date().toLocaleTimeString();
+            const chatIn = document.getElementById('chat-input');
+            chatIn.onkeydown = (e) => {
+                if (e.key === 'Enter' && chatIn.value.trim() && Date.now() - lastChat > 500) {
+                    lastChat = Date.now();
                     push(ref(db, 'chat'), {
-                        sender: myData.name,
-                        text: msg,
-                        time: time,
-                        color: player.chatCol,
-                        font: player.font,
-                        isAdmin: myData.name === "eelaska"
+                        sender: myData.name, text: chatIn.value,
+                        col: player.chatCol, font: player.font,
+                        time: new Date().toLocaleTimeString()
                     });
-                    chatInput.value = "";
+                    chatIn.value = "";
                 }
             };
-
             onValue(ref(db, 'chat'), s => {
                 const box = document.getElementById('chat-messages');
                 box.innerHTML = "";
                 Object.values(s.val() || {}).slice(-20).forEach(m => {
-                    const d = document.createElement('div');
-                    const isRainbow = m.color === 'rainbow' ? 'animation: rainbow-text 1s infinite;' : `color: ${m.color};`;
-                    const tag = m.isAdmin ? '<span class="gold-tag">[OWNER]</span> ' : '';
-                    d.innerHTML = `<small>${m.time}</small> ${tag}<b>${m.sender}:</b> <span style="font-family:${m.font}; ${isRainbow}">${m.text}</span>`;
-                    box.appendChild(d);
+                    const tag = m.sender.toLowerCase() === 'eelaska' ? '<span class="gold-tag">[OWNER]</span> ' : '';
+                    const style = m.col === 'rainbow' ? 'animation: rainbow-cycle 1s linear infinite;' : `color: ${m.col};`;
+                    box.innerHTML += `<div><small>${m.time}</small> ${tag}<b>${m.sender}:</b> <span style="font-family:${m.font}; ${style}">${m.text}</span></div>`;
                 });
                 box.scrollTop = box.scrollHeight;
             });
@@ -269,144 +278,133 @@
             document.getElementById('color-select').onchange = (e) => player.chatCol = e.target.value;
             document.getElementById('font-select').onchange = (e) => player.font = e.target.value;
 
-            // SHOOTING
-            window.onclick = (e) => {
-                if (document.getElementById('gun-hack').checked && myData.name === "eelaska") {
-                    const rect = canvas.getBoundingClientRect();
-                    const tx = e.clientX - rect.left;
-                    const ty = e.clientY - rect.top;
-                    const angle = Math.atan2(ty - (player.y + 40), tx - (player.x + 20));
-                    myBullets.push({ x: player.x + 20, y: player.y + 40, vx: Math.cos(angle) * 10, vy: Math.sin(angle) * 10 });
-                }
-            };
-
+            // Block Stacking & Placing
             window.oncontextmenu = (e) => {
                 e.preventDefault();
-                const tx = player.x + (player.facing * (BLOCK_SIZE + 10));
-                const ty = player.y + 10;
-                
-                if (player.equipped === "Eraser") {
-                    for(let id in worldBlocks) {
-                        let b = worldBlocks[id];
-                        if (tx > b.x && tx < b.x + BLOCK_SIZE && ty > b.y && ty < b.y + BLOCK_SIZE) {
-                            remove(ref(db, `blocks/${id}`)); return;
-                        }
+                if (Date.now() - lastAction < 250) return;
+                lastAction = Date.now();
+
+                let tx = Math.floor((player.x + (player.facing * 70)) / 20) * 20;
+                let ty = Math.floor(player.y / 20) * 20;
+
+                if (player.slot === 3) {
+                    for (let id in blocks) {
+                        let b = blocks[id];
+                        if (Math.abs(tx - b.x) < 50 && Math.abs(ty - b.y) < 50) { remove(ref(db, `blocks/${id}`)); break; }
                     }
                 } else {
-                    const bRef = push(ref(db, 'blocks'));
-                    set(bRef, { x: tx, y: ty, type: player.equipped, vy: 0 });
+                    let finalY = ty;
+                    let found = true;
+                    while(found) {
+                        found = false;
+                        for(let id in blocks) { if(Math.abs(tx-blocks[id].x)<50 && Math.abs(finalY-blocks[id].y)<50) { finalY -= BLOCK_SIZE; found = true; } }
+                    }
+                    push(ref(db, 'blocks'), { x: tx, y: finalY, type: player.slot === 1 ? 'Wood' : 'Stone' });
                 }
             };
 
-            function drawPlayer(ctx, p, color, name) {
-                // Stickman logic improved
-                ctx.strokeStyle = color; ctx.lineWidth = 4;
-                const frame = p.walking ? Math.sin(p.frame * 0.2) * 15 : 0;
-                
-                // Head
-                ctx.beginPath(); ctx.arc(p.x + 20, p.y + 15, 12, 0, Math.PI * 2); ctx.stroke();
-                // Body
-                ctx.beginPath(); ctx.moveTo(p.x + 20, p.y + 27); ctx.lineTo(p.x + 20, p.y + 55); ctx.stroke();
-                // Arms
-                ctx.beginPath(); ctx.moveTo(p.x + 20, p.y + 35); ctx.lineTo(p.x + 20 + (p.facing * 15), p.y + 45 + frame); ctx.stroke();
-                // Legs
-                ctx.beginPath(); ctx.moveTo(p.x + 20, p.y + 55); ctx.lineTo(p.x + 20 + frame, p.y + 80); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(p.x + 20, p.y + 55); ctx.lineTo(p.x + 20 - frame, p.y + 80); ctx.stroke();
-
-                // Name
-                ctx.fillStyle = "black"; ctx.font = "14px Tahoma"; ctx.textAlign = "center";
-                const isAdmin = name === "eelaska";
-                if (isAdmin) {
-                    ctx.fillStyle = "gold";
-                    ctx.fillText("[OWNER]", p.x + 20, p.y - 25);
+            // Gun
+            window.onclick = (e) => {
+                if (myData.name.toLowerCase() === "eelaska" && document.getElementById('gun-hack').checked) {
+                    const rect = canvas.getBoundingClientRect();
+                    const angle = Math.atan2(e.clientY - rect.top - (player.y + 40), e.clientX - rect.left - (player.x + 20));
+                    myBullets.push({ x: player.x + 20, y: player.y + 40, vx: Math.cos(angle) * 12, vy: Math.sin(angle) * 12 });
                 }
-                ctx.fillStyle = "grey"; ctx.font = "10px Tahoma";
-                ctx.fillText(`[${p.equipped}]`, p.x + 20, p.y - 12);
-                ctx.fillStyle = "black"; ctx.font = "bold 14px Tahoma";
-                ctx.fillText(name, p.x + 20, p.y - 2);
+            };
+
+            function drawSprite(ctx, p, x, y) {
+                const walk = Math.sin(Date.now() * 0.012) * 12;
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = p.char === 'redstickman' ? 'red' : 'black';
+                
+                if (p.char.includes('stickman')) {
+                    ctx.beginPath(); ctx.arc(x + 20, y + 15, 12, 0, 7); ctx.stroke();
+                    ctx.moveTo(x+20, y+27); ctx.lineTo(x+20, y+55);
+                    ctx.moveTo(x+20, y+55); ctx.lineTo(x+20+walk, y+80);
+                    ctx.moveTo(x+20, y+55); ctx.lineTo(x+20-walk, y+80);
+                    ctx.stroke();
+                } else if (p.char === 'mario') {
+                    ctx.fillStyle = "red"; ctx.fillRect(x+5, y+5, 30, 25); // Hat
+                    ctx.fillStyle = "#ffcc99"; ctx.fillRect(x+8, y+25, 24, 20); // Face
+                    ctx.fillStyle = "blue"; ctx.fillRect(x+5, y+45, 30, 35); // Body
+                } else { // Princess
+                    ctx.fillStyle = "pink"; ctx.beginPath(); ctx.moveTo(x+20, y+15); ctx.lineTo(x-5, y+80); ctx.lineTo(x+45, y+80); ctx.fill();
+                    ctx.fillStyle = "yellow"; ctx.arc(x+20, y+15, 15, 0, 7); ctx.fill();
+                }
+
+                // Nametags
+                const isOwner = p.name.toLowerCase() === 'eelaska';
+                ctx.textAlign = "center";
+                if (isOwner) {
+                    ctx.font = "bold 14px Tahoma";
+                    ctx.fillStyle = "gold"; // Simplified for canvas draw, gold-tag class handles chat
+                    ctx.fillText("[OWNER]", x+20, y-25);
+                }
+                ctx.fillStyle = "black"; ctx.font = "bold 15px Tahoma";
+                ctx.fillText(p.name, x+20, y-8);
             }
 
             function loop() {
-                // Movement
-                const isFlying = document.getElementById('fly-hack').checked && myData.name === "eelaska";
+                const fly = document.getElementById('fly-hack').checked && myData.name.toLowerCase() === "eelaska";
                 
-                if (keys['a']) { player.vx = -4; player.facing = -1; player.walking = true; }
-                else if (keys['d']) { player.vx = 4; player.facing = 1; player.walking = true; }
-                else { player.vx *= FRICTION; player.walking = false; }
+                if (keys['a']) { player.vx = -6; player.facing = -1; player.walking = true; }
+                else if (keys['d']) { player.vx = 6; player.facing = 1; player.walking = true; }
+                else { player.vx *= 0.85; player.walking = false; }
 
-                if (isFlying) {
-                    if (keys['w']) player.vy = -4;
-                    else if (keys['s']) player.vy = 4;
-                    else player.vy = 0;
+                if (fly) {
+                    if (keys['w']) player.vy = -6; else if (keys['s']) player.vy = 6; else player.vy = 0;
                 } else {
-                    player.vy += GRAVITY;
+                    player.vy += 0.5;
                 }
 
                 player.x += player.vx;
                 player.y += player.vy;
 
-                // Collisions (Floor)
-                if (player.y > canvas.height - PLAYER_H) {
-                    player.y = canvas.height - PLAYER_H;
-                    player.vy = 0;
-                }
-                if (keys['w'] && player.vy === 0 && !isFlying) player.vy = -10;
+                // Ground & Block Collision
+                let onGround = false;
+                const GROUND = canvas.height - 100;
+                if (player.y > GROUND - PLAYER_H) { player.y = GROUND - PLAYER_H; player.vy = 0; onGround = true; }
 
-                // Block Physics & Collision
-                for (let id in worldBlocks) {
-                    let b = worldBlocks[id];
-                    
-                    // Blocks fall
-                    let supported = b.y >= canvas.height - BLOCK_SIZE;
-                    for (let id2 in worldBlocks) {
-                        let b2 = worldBlocks[id2];
-                        if (id !== id2 && b.x < b2.x + BLOCK_SIZE && b.x + BLOCK_SIZE > b2.x && b.y + BLOCK_SIZE === b2.y) supported = true;
-                    }
-                    if (!supported) {
-                        b.y += 2;
-                        update(ref(db, `blocks/${id}`), { y: b.y });
-                    }
-
-                    // Player vs Block (Solid)
-                    if (player.x < b.x + BLOCK_SIZE && player.x + PLAYER_W > b.x && player.y < b.y + BLOCK_SIZE && player.y + PLAYER_H > b.y) {
-                        // Push
-                        if (player.y + PLAYER_H - 10 > b.y && player.y < b.y + BLOCK_SIZE - 10) {
-                            if (player.vx > 0) b.x += 2; else b.x -= 2;
+                for (let id in blocks) {
+                    let b = blocks[id];
+                    if (player.x < b.x + BLOCK_SIZE && player.x + PLAYER_W > b.x && player.y + PLAYER_H > b.y && player.y < b.y + BLOCK_SIZE) {
+                        if (player.vy > 0 && player.y + PLAYER_H < b.y + 20) {
+                            player.y = b.y - PLAYER_H; player.vy = 0; onGround = true;
+                        } else {
+                            // Push
+                            b.x += player.vx; 
                             update(ref(db, `blocks/${id}`), { x: b.x });
-                            player.x -= player.vx; 
-                        } else if (player.vy > 0) { // Top collision
-                            player.y = b.y - PLAYER_H;
-                            player.vy = 0;
+                            player.x -= player.vx;
                         }
                     }
                 }
 
-                if (player.walking) player.frame++;
-                update(pRef, { ...player, name: myData.name, color: myData.color });
+                if (keys['w'] && onGround && !fly) { player.vy = -12; jumpSound.play(); }
 
-                // Draw
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                update(pRef, { ...player, name: myData.name });
 
-                for (let id in worldBlocks) {
-                    let b = worldBlocks[id];
-                    ctx.fillStyle = b.type === 'Wood' ? '#8B4513' : '#555';
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                // Floor
+                ctx.fillStyle = "#444"; ctx.fillRect(0, GROUND, canvas.width, 100);
+
+                for (let id in blocks) {
+                    let b = blocks[id];
+                    ctx.fillStyle = b.type === 'Wood' ? '#8B4513' : '#666';
                     ctx.fillRect(b.x, b.y, BLOCK_SIZE, BLOCK_SIZE);
                     ctx.strokeRect(b.x, b.y, BLOCK_SIZE, BLOCK_SIZE);
                 }
 
                 for (let id in players) {
-                    if (id !== myData.id) drawPlayer(ctx, players[id], players[id].color, players[id].name);
+                    if (id !== myId) drawSprite(ctx, players[id], players[id].x, players[id].y);
                 }
-                drawPlayer(ctx, player, myData.color, myData.name);
+                drawSprite(ctx, player, player.x, player.y);
 
                 // Bullets
                 myBullets.forEach((b, i) => {
                     b.x += b.vx; b.y += b.vy;
-                    ctx.fillStyle = "red"; ctx.fillRect(b.x, b.y, 5, 5);
-                    // Hit detection
+                    ctx.fillStyle = "red"; ctx.fillRect(b.x, b.y, 8, 8);
                     for (let pid in players) {
-                        let p = players[pid];
-                        if (pid !== myData.id && b.x > p.x && b.x < p.x + PLAYER_W && b.y > p.y && b.y < p.y + PLAYER_H) {
+                        if (pid !== myId && b.x > players[pid].x && b.x < players[pid].x + PLAYER_W && b.y > players[pid].y && b.y < players[pid].y + PLAYER_H) {
                             update(ref(db, `players/${pid}`), { dead: true });
                             myBullets.splice(i, 1);
                         }
