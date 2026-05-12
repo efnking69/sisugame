@@ -928,7 +928,7 @@ function initGame(){
   onDisconnect(pRef).remove();
 
   // Admin buttons
-  document.getElementById('play-global').onclick=()=>set(ref(db,'server/globalMusic'),{src:'https://github.com/Eelaska/sisugame/raw/main/rickroll.mp3',playing:true});
+  document.getElementById('play-global').onclick=()=>set(ref(db,'server/globalMusic'),{src:'https://github.com/efnking69/sisugame/blob/main/rickroll.mp3',playing:true});
   document.getElementById('stop-global').onclick=()=>set(ref(db,'server/globalMusic'),{playing:false});
   document.getElementById('kill-all-btn').onclick=()=>{
     Object.keys(players).forEach(id=>{ if(id!==myId) update(ref(db,`players/${id}`),{dead:true,hp:0}); });
