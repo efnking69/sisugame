@@ -2,8 +2,8 @@
 <html lang="fi">
 <head>
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Sisu Game Päivitetty">
-    <meta property="og:description" content="Tervetuloa moninpeli sisugameen josa voi naurattaa ja kaikkee hasua!">
+    <meta property="og:title" content="Sisugame pro game rpeli">
+    <meta property="og:description" content="Tervetuloa moninpeli sisugameen täällä nauretaan ja hasua pidetään!">
     <meta property="og:image" content="https://i.ibb.co/bMNLTFKg/Gemini-Generated-Image-6j4e356j4e356j4e.png">
     <meta name="theme-color" content="#FFD700">
     <meta charset="UTF-8">
@@ -12,13 +12,13 @@
     <style>
         body { margin: 0; background: #111; font-family: 'Tahoma', sans-serif; overflow: hidden; color: white; }
         canvas { display: block; background: #87CEEB; cursor: crosshair; }
-
+        
         #online-counter {
             position: absolute; top: 10px; right: 20px;
             font-size: 38px; font-weight: bold; z-index: 50;
-            font-family: 'Tahoma', sans-serif;
+            font-family: 'Tahoma', sans-serif; text-shadow: 2px 2px 4px black;
         }
-
+        
         #chat-container {
             position: absolute; bottom: 110px; left: 20px; width: 420px; height: 340px;
             background: rgba(0,0,0,0.85); border: 3px solid #444; display: flex; flex-direction: column; z-index: 60; border-radius: 4px;
@@ -26,53 +26,51 @@
         #chat-messages { flex: 1; overflow-y: auto; padding: 12px; color: white; font-size: 14px; }
         #chat-input { background: #222; border: none; color: white; padding: 12px; outline: none; font-size: 14px; }
 
-        /* Minecraft style hotbar */
         #hotbar {
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 4px; background: rgba(0,0,0,0.6); padding: 6px; border: 3px solid #555; z-index: 60; border-radius: 4px;
+            display: flex; gap: 4px; background: rgba(0,0,0,0.7); padding: 6px; border: 3px solid #555; z-index: 60; border-radius: 4px;
         }
         .slot {
-            width: 64px; height: 64px; background: rgba(139, 139, 139, 0.8);
+            width: 64px; height: 64px; background: rgba(139, 139, 139, 0.85);
             border: 3px solid #8b8b8b; display: flex; align-items: center; justify-content: center;
             font-weight: bold; position: relative; color: white; font-size: 28px;
             box-shadow: inset 0 0 8px rgba(0,0,0,0.6);
         }
-        .slot.active { border: 3px solid #fff; box-shadow: 0 0 12px #fff; }
-        .slot span { position: absolute; bottom: 2px; right: 4px; font-size: 14px; color: #ddd; text-shadow: 1px 1px 2px black; }
+        .slot.active { border: 3px solid #fff; box-shadow: 0 0 15px #fff; }
 
-        /* Dear ImGui style Admin Panel - only for Eelaska */
         #admin-panel {
             position: absolute; top: 80px; left: 20px; width: 280px; background: #1e1e2e; border: 2px solid #4a6bff;
             color: #ddd; padding: 0; display: none; z-index: 100; box-shadow: 0 8px 20px rgba(0,0,0,0.6); border-radius: 6px; overflow: hidden;
-            font-family: 'Tahoma', sans-serif; font-size: 14px;
         }
         .title-bar {
-            background: #0f1428; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; cursor: move; user-select: none;
+            background: #0f1428; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; cursor: move;
         }
-        .title-bar button { background: none; border: none; color: #aaa; font-size: 18px; cursor: pointer; padding: 0 6px; }
         .content { padding: 12px; }
-        label { display: block; margin: 8px 0; cursor: pointer; }
-        input[type="checkbox"] { accent-color: #4a6bff; transform: scale(1.2); margin-right: 8px; }
+        label { display: block; margin: 10px 0; cursor: pointer; }
     </style>
 </head>
 <body>
+
     <button id="delete-acc-btn" style="display:none; position:absolute; top:10px; left:10px; background:#ff4444; color:white; border:2px solid black; padding:10px; cursor:pointer; z-index:101;">Päävalikko</button>
     <div id="online-counter">Online: 0</div>
 
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" style="position:absolute; inset:0; background:rgba(0,0,0,0.9); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:200;">
+        <h1 style="font-family: 'Comic Sans MS'; font-size: 52px; margin-bottom:10px;">SISUGAME</h1>
+        <input type="text" id="username-input" placeholder="Käyttäjänimi..." maxlength="20" style="padding:15px; width:320px; font-size:18px; margin:15px 0;">
+        <button id="login-btn" style="padding:18px 80px; font-size:24px; font-weight:bold; cursor:pointer; background:#4a6bff; border:none; color:white;">PELA A</button>
+        <p id="error-msg" style="color:red; font-weight:bold; margin-top:10px;"></p>
+    </div>
+
+    <!-- ADMIN PANEL -->
     <div id="admin-panel">
         <div class="title-bar" id="admin-title">
             <span>Sisu Admin Panel</span>
-            <div>
-                <button id="minimize-btn">_</button>
-                <button id="close-admin">×</button>
-            </div>
+            <button id="close-admin" style="background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;">×</button>
         </div>
-        <div class="content" id="admin-content">
+        <div class="content">
             <label><input type="checkbox" id="fly-hack"> Lentotila</label>
-            <label><input type="checkbox" id="gun-hack"> Ase</label>
-            <hr style="border-color:#334">
-            <b>Music Sync</b><br>
-            <label><input type="checkbox" id="music-toggle"> Soita musiikkia</label>
+            <label><input type="checkbox" id="gun-hack"> Ase (tulossa)</label>
         </div>
     </div>
 
@@ -99,109 +97,128 @@
             projectId: "gamesisu-837b9",
             databaseURL: "https://gamesisu-837b9-default-rtdb.firebaseio.com/"
         };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        const VERSION = "v2.3"; // Muuta tätä kun teet isoja muutoksia
         const BLOCK_SIZE = 60;
-        const GRAVITY = 0.68;
+        const GRAVITY = 0.72;
+        const JUMP_FORCE = -16.8;
         const PLAYER_W = 36;
-        const PLAYER_H = 120;
-        const JUMP = -16.5;
+        const PLAYER_H = 110;
 
-        let myData, pLocal, players = {}, blocks = {}, keys = {}, lastAction = 0;
+        let myData = null;
+        let pLocal = null;
+        let players = {};
+        let blocks = {};
+        let keys = {};
+        let lastAction = 0;
         let cameraX = 0;
-        let isMinimized = false;
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // ==================== BETTER PHYSICS & COLLISION ====================
+        function getPlayerBounds(x, y) {
+            return {
+                left: x,
+                right: x + PLAYER_W,
+                top: y,
+                bottom: y + PLAYER_H
+            };
+        }
+
+        function checkCollision(x, y) {
+            const b = getPlayerBounds(x, y);
+            for (let id in blocks) {
+                const bl = blocks[id];
+                const bx = bl.gx * BLOCK_SIZE;
+                const by = bl.gy * BLOCK_SIZE;
+                if (!(b.right < bx || b.left > bx + BLOCK_SIZE || b.bottom < by || b.top > by + BLOCK_SIZE)) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         function worldToGrid(wx, wy) {
-            return { x: Math.floor(wx / BLOCK_SIZE), y: Math.floor(wy / BLOCK_SIZE) };
+            return {
+                gx: Math.floor(wx / BLOCK_SIZE),
+                gy: Math.floor(wy / BLOCK_SIZE)
+            };
         }
 
-        function isBlockAt(gx, gy) {
-            for (let id in blocks) {
-                const b = blocks[id];
-                if (b.gx === gx && b.gy === gy) return true;
-            }
-            return false;
-        }
+        // ==================== FIREBASE USERNAME PERSISTENCE ====================
+        async function getOrCreateUser(rawName) {
+            const lower = rawName.toLowerCase();
+            const snap = await get(ref(db, 'usernames'));
+            const existing = snap.val() || {};
 
-        function getBlockAt(gx, gy) {
-            for (let id in blocks) {
-                const b = blocks[id];
-                if (b.gx === gx && b.gy === gy) return {id, ...b};
-            }
-            return null;
-        }
-
-        function applyBlockPhysics() {
-            for (let id in blocks) {
-                let b = blocks[id];
-                if (!isBlockAt(b.gx, b.gy + 1) && b.gy < 40) {
-                    b.gy += 1;
-                    update(ref(db, `blocks/${id}`), { gy: b.gy });
+            for (let name in existing) {
+                if (name.toLowerCase() === lower) {
+                    return { id: existing[name], name: name };
                 }
             }
+
+            const newId = "u_" + Date.now();
+            await set(ref(db, `usernames/${rawName}`), newId);
+            return { id: newId, name: rawName };
         }
 
-        function placeBlock(gx, gy, type) {
-            if (gx >= -2 && gx <= 2) return; // spawn protection
-            let targetY = gy;
-            while (isBlockAt(gx, targetY)) targetY--;
-            push(ref(db, 'blocks'), { gx: gx, gy: targetY, type: type });
-        }
-
-        function checkPlayerCollision(px, py) {
-            const left = Math.floor(px / BLOCK_SIZE);
-            const right = Math.floor((px + PLAYER_W) / BLOCK_SIZE);
-            const top = Math.floor(py / BLOCK_SIZE);
-            const bottom = Math.floor((py + PLAYER_H) / BLOCK_SIZE);
-
-            for (let gx = left - 1; gx <= right + 1; gx++) {
-                for (let gy = top - 1; gy <= bottom + 1; gy++) {
-                    if (isBlockAt(gx, gy)) return true;
-                }
-            }
-            return false;
-        }
-
-        async function initGame(data) {
-            myData = data;
+        // ==================== GAME INIT ====================
+        async function initGame(savedData) {
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('game-ui').style.display = 'block';
             document.getElementById('delete-acc-btn').style.display = 'block';
+
+            const user = await getOrCreateUser(savedData.name);
+            myData = { ...user, char: savedData.char || 'stickman' };
+
+            // Save with version
+            localStorage.setItem('sisu_user', JSON.stringify({
+                ...myData,
+                version: VERSION
+            }));
 
             const isOwner = myData.name.toLowerCase() === "eelaska";
             if (isOwner) document.getElementById('admin-panel').style.display = 'block';
 
-            const canvas = document.getElementById('gameCanvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-
-            pLocal = { 
-                gx: 5, gy: 8,
-                pixelX: 300, pixelY: 300,
-                vx: 0, vy: 0, facing: 1, walking: false,
-                slot: 1, char: data.char, dead: false
+            pLocal = {
+                pixelX: 400,
+                pixelY: 200,
+                vx: 0,
+                vy: 0,
+                facing: 1,
+                walking: false,
+                slot: 1,
+                char: myData.char
             };
 
             const pRef = ref(db, `players/${myData.id}`);
-            set(pRef, {...pLocal, name: myData.name});
+            set(pRef, { ...pLocal, name: myData.name });
             onDisconnect(pRef).remove();
 
             onValue(ref(db, 'players'), s => {
                 players = s.val() || {};
-                document.getElementById('online-counter').innerText = "Online: " + Object.keys(players).length;
+                document.getElementById('online-counter').innerText = `Online: ${Object.keys(players).length}`;
             });
 
             onValue(ref(db, 'blocks'), s => blocks = s.val() || {});
 
             // Chat
             const chatIn = document.getElementById('chat-input');
-            chatIn.onkeydown = (e) => {
+            chatIn.onkeydown = e => {
                 if (e.key === 'Enter' && chatIn.value.trim()) {
                     push(ref(db, 'chat'), {
                         sender: myData.name,
-                        text: chatIn.value,
+                        text: chatIn.value.trim(),
                         time: new Date().toLocaleTimeString()
                     });
                     chatIn.value = "";
@@ -211,7 +228,7 @@
             onValue(ref(db, 'chat'), s => {
                 const box = document.getElementById('chat-messages');
                 box.innerHTML = "";
-                Object.values(s.val() || {}).slice(-25).forEach(m => {
+                Object.values(s.val() || {}).slice(-30).forEach(m => {
                     box.innerHTML += `<div><b>${m.sender}:</b> ${m.text}</div>`;
                 });
                 box.scrollTop = box.scrollHeight;
@@ -226,81 +243,102 @@
                 };
             });
 
-            window.onkeydown = (e) => {
+            window.onkeydown = e => {
                 if (document.activeElement.id === 'chat-input') return;
                 keys[e.key.toLowerCase()] = true;
                 if (['1','2','3'].includes(e.key)) {
                     pLocal.slot = parseInt(e.key);
                     document.querySelectorAll('.slot').forEach(s => s.classList.remove('active'));
-                    document.getElementById('slot'+e.key).classList.add('active');
+                    document.getElementById('slot' + e.key).classList.add('active');
                 }
             };
-            window.onkeyup = (e) => keys[e.key.toLowerCase()] = false;
+            window.onkeyup = e => keys[e.key.toLowerCase()] = false;
 
-            // Draw improved stickman
-            function drawPlayer(ctx, p, x, y) {
-                if (p.char === 'mario') {
-                    // your old mario draw
-                    ctx.fillStyle = "red"; ctx.fillRect(x+5, y, 30, 12);
-                    // ... add more if you want
-                } else {
-                    const swing = p.walking ? Math.sin(Date.now()*0.02) * 8 : 0;
-                    ctx.strokeStyle = p.char === 'redstickman' ? 'red' : '#111';
-                    ctx.lineWidth = 7;
+            // ==================== DRAW ====================
+            function drawPlayer(p, x, y) {
+                const swing = p.walking ? Math.sin(Date.now() * 0.018) * 9 : 0;
+                ctx.strokeStyle = p.char === 'redstickman' ? '#c00' : '#111';
+                ctx.lineWidth = 8;
 
-                    // head
-                    ctx.beginPath(); ctx.arc(x+18, y+25, 16, 0, Math.PI*2); ctx.stroke();
-                    // body
-                    ctx.beginPath(); ctx.moveTo(x+18, y+41); ctx.lineTo(x+18, y+85); ctx.stroke();
-                    // arms
-                    ctx.beginPath();
-                    ctx.moveTo(x+18, y+55); ctx.lineTo(x+18 - p.facing*20 + swing, y+72);
-                    ctx.moveTo(x+18, y+55); ctx.lineTo(x+18 + p.facing*20 - swing, y+72);
-                    ctx.stroke();
-                    // legs
-                    ctx.beginPath();
-                    ctx.moveTo(x+18, y+85); ctx.lineTo(x+10, y+118);
-                    ctx.moveTo(x+18, y+85); ctx.lineTo(x+26, y+118);
-                    ctx.stroke();
-                }
-                ctx.fillStyle = "white"; ctx.font = "bold 15px Tahoma";
+                // head
+                ctx.beginPath();
+                ctx.arc(x + 18, y + 28, 17, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // body
+                ctx.beginPath();
+                ctx.moveTo(x + 18, y + 45);
+                ctx.lineTo(x + 18, y + 88);
+                ctx.stroke();
+
+                // arms
+                ctx.beginPath();
+                ctx.moveTo(x + 18, y + 58);
+                ctx.lineTo(x + 18 - p.facing * 22 + swing, y + 75);
+                ctx.moveTo(x + 18, y + 58);
+                ctx.lineTo(x + 18 + p.facing * 22 - swing, y + 75);
+                ctx.stroke();
+
+                // legs
+                ctx.beginPath();
+                ctx.moveTo(x + 18, y + 88);
+                ctx.lineTo(x + 8, y + 118);
+                ctx.moveTo(x + 18, y + 88);
+                ctx.lineTo(x + 28, y + 118);
+                ctx.stroke();
+
+                ctx.fillStyle = "white";
+                ctx.font = "bold 16px Tahoma";
                 ctx.textAlign = "center";
-                ctx.fillText(p.name, x+18, y-8);
+                ctx.fillText(p.name, x + 18, y - 5);
             }
 
+            // ==================== MAIN LOOP ====================
             function loop() {
                 const fly = isOwner && document.getElementById('fly-hack')?.checked;
 
-                if (keys['a']) { pLocal.vx = -6.2; pLocal.facing = -1; pLocal.walking = true; }
-                else if (keys['d']) { pLocal.vx = 6.2; pLocal.facing = 1; pLocal.walking = true; }
-                else { pLocal.vx *= 0.75; pLocal.walking = false; }
+                // Movement
+                if (keys['a']) { pLocal.vx = -6.5; pLocal.facing = -1; pLocal.walking = true; }
+                else if (keys['d']) { pLocal.vx = 6.5; pLocal.facing = 1; pLocal.walking = true; }
+                else { pLocal.vx *= 0.78; pLocal.walking = false; }
 
                 if (!fly) pLocal.vy += GRAVITY;
-                else pLocal.vy = keys['w'] ? -8 : keys['s'] ? 8 : 0;
+                else pLocal.vy = keys['w'] ? -9 : keys['s'] ? 9 : 0;
 
+                // Horizontal collision
                 let nx = pLocal.pixelX + pLocal.vx;
+                if (!checkCollision(nx, pLocal.pixelY)) pLocal.pixelX = nx;
+
+                // Vertical collision
                 let ny = pLocal.pixelY + pLocal.vy;
+                if (!checkCollision(pLocal.pixelX, ny)) {
+                    pLocal.pixelY = ny;
+                } else {
+                    if (pLocal.vy > 0) pLocal.vy = 0;
+                    else pLocal.vy = 1;
+                }
 
-                if (!checkPlayerCollision(nx, pLocal.pixelY)) pLocal.pixelX = nx;
-                if (!checkPlayerCollision(pLocal.pixelX, ny)) pLocal.pixelY = ny;
-                else if (pLocal.vy > 0) pLocal.vy = 0;
-
-                if (pLocal.pixelY > canvas.height - PLAYER_H - 80) {
-                    pLocal.pixelY = canvas.height - PLAYER_H - 80;
+                // Ground limit
+                if (pLocal.pixelY > canvas.height - 150) {
+                    pLocal.pixelY = canvas.height - 150;
                     pLocal.vy = 0;
                 }
 
-                if (keys['w'] && Math.abs(pLocal.vy) < 3) pLocal.vy = JUMP;
+                // Jump
+                if (keys['w'] && Math.abs(pLocal.vy) < 4) pLocal.vy = JUMP_FORCE;
 
-                // Block physics
-                if (Math.random() < 0.12) applyBlockPhysics();
+                // Update to Firebase
+                update(ref(db, `players/${myData.id}`), { ...pLocal, name: myData.name });
+
+                // Camera
+                cameraX = Math.max(0, pLocal.pixelX - canvas.width / 2);
 
                 // Render
-                ctx.clearRect(0,0,canvas.width,canvas.height);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
 
                 // Ground
                 ctx.fillStyle = "#1e5c1e";
-                ctx.fillRect(0, canvas.height-70, canvas.width, 200);
+                ctx.fillRect(0, canvas.height - 80, canvas.width, 200);
 
                 // Blocks
                 for (let id in blocks) {
@@ -310,74 +348,90 @@
                     ctx.fillStyle = b.type === 'Wood' ? '#8B5A2B' : '#555577';
                     ctx.fillRect(sx, sy, BLOCK_SIZE, BLOCK_SIZE);
                     ctx.strokeStyle = "#222";
-                    ctx.lineWidth = 3;
+                    ctx.lineWidth = 4;
                     ctx.strokeRect(sx, sy, BLOCK_SIZE, BLOCK_SIZE);
                 }
 
-                // Players
+                // Other players
                 for (let id in players) {
-                    if (id !== myData.id) drawPlayer(ctx, players[id], players[id].pixelX - cameraX, players[id].pixelY);
+                    if (id !== myData.id) {
+                        const p = players[id];
+                        drawPlayer(p, p.pixelX - cameraX, p.pixelY);
+                    }
                 }
-                drawPlayer(ctx, pLocal, pLocal.pixelX - cameraX, pLocal.pixelY);
+
+                // Local player
+                drawPlayer(pLocal, pLocal.pixelX - cameraX, pLocal.pixelY);
 
                 requestAnimationFrame(loop);
             }
 
-            // Right click build/erase
+            // Right click build / erase
             canvas.addEventListener('contextmenu', e => {
                 e.preventDefault();
-                if (Date.now() - lastAction < 180) return;
+                if (Date.now() - lastAction < 160) return;
                 lastAction = Date.now();
 
                 const rect = canvas.getBoundingClientRect();
                 const mx = e.clientX - rect.left + cameraX;
                 const my = e.clientY - rect.top;
+
                 const g = worldToGrid(mx, my);
 
                 if (pLocal.slot === 3) {
-                    const block = getBlockAt(g.x, g.y);
-                    if (block) remove(ref(db, `blocks/${block.id}`));
+                    for (let id in blocks) {
+                        const b = blocks[id];
+                        if (b.gx === g.gx && b.gy === g.gy) {
+                            remove(ref(db, `blocks/${id}`));
+                            break;
+                        }
+                    }
                 } else {
-                    placeBlock(g.x, g.y, pLocal.slot === 1 ? 'Wood' : 'Stone');
+                    // Simple placement
+                    if (g.gx < -3 || g.gx > 3) {
+                        push(ref(db, 'blocks'), {
+                            gx: g.gx,
+                            gy: g.gy,
+                            type: pLocal.slot === 1 ? 'Wood' : 'Stone'
+                        });
+                    }
                 }
             });
 
             loop();
         }
 
-        // Admin panel drag & minimize
-        const admin = document.getElementById('admin-panel');
-        let dragging = false, ox, oy;
-        document.getElementById('admin-title').onmousedown = e => {
-            if (e.target.tagName === "BUTTON") return;
-            dragging = true; ox = e.clientX - admin.offsetLeft; oy = e.clientY - admin.offsetTop;
-        };
-        document.onmousemove = e => {
-            if (dragging) {
-                admin.style.left = (e.clientX - ox) + "px";
-                admin.style.top = (e.clientY - oy) + "px";
+        // ==================== LOGIN ====================
+        document.getElementById('login-btn').onclick = async () => {
+            let name = document.getElementById('username-input').value.trim();
+            if (!name) return;
+
+            document.getElementById('error-msg').innerText = "Yhdistetään...";
+            try {
+                await initGame({ name: name });
+            } catch (e) {
+                document.getElementById('error-msg').innerText = "Virhe yhteydessä!";
             }
         };
-        document.onmouseup = () => dragging = false;
 
-        document.getElementById('minimize-btn').onclick = () => {
-            isMinimized = !isMinimized;
-            document.getElementById('admin-content').style.display = isMinimized ? 'none' : 'block';
-        };
-        document.getElementById('close-admin').onclick = () => admin.style.display = 'none';
+        // Load saved user
+        const saved = JSON.parse(localStorage.getItem('sisu_user'));
+        if (saved && saved.version === VERSION) {
+            initGame(saved);
+        } else if (saved) {
+            // Version changed → force new login but keep name
+            document.getElementById('username-input').value = saved.name;
+        }
 
-        // Login screen (kept from your original)
-        document.getElementById('login-btn').onclick = async () => {
-            const rawName = document.getElementById('username-input').value.trim();
-            if (!rawName) return;
-            // ... your original username check logic here
-            const userData = { id: "u_" + Date.now(), name: rawName, char: selectedChar };
-            localStorage.setItem('sisu_user_vfinal', JSON.stringify(userData));
-            initGame(userData);
+        document.getElementById('delete-acc-btn').onclick = () => {
+            localStorage.removeItem('sisu_user');
+            location.reload();
         };
 
-        const saved = JSON.parse(localStorage.getItem('sisu_user_vfinal'));
-        if (saved) initGame(saved);
+        // Admin panel close
+        document.getElementById('close-admin').onclick = () => {
+            document.getElementById('admin-panel').style.display = 'none';
+        };
     </script>
 </body>
 </html>
