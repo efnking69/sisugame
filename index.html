@@ -2,90 +2,118 @@
 <html lang="fi">
 <head>
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Sisugame pro game rpeli">
-    <meta property="og:description" content="Tervetuloa moninpeli sisugameen täällä nauretaan ja hasua pidetään!">
+    <meta property="og:title" content="sisugame">
+    <meta property="og:description" content="Tosi hassu moninpeli sisugame!">
     <meta property="og:image" content="https://i.ibb.co/bMNLTFKg/Gemini-Generated-Image-6j4e356j4e356j4e.png">
     <meta name="theme-color" content="#FFD700">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>sisugame - uusi fysiikka</title>
+    <title>sisugame - THE REAL FULL VERSION</title>
     <style>
         body { margin: 0; background: #111; font-family: 'Tahoma', sans-serif; overflow: hidden; color: white; }
         canvas { display: block; background: #87CEEB; cursor: crosshair; }
         
-        #online-counter {
-            position: absolute; top: 10px; right: 20px;
-            font-size: 38px; font-weight: bold; z-index: 50;
-            font-family: 'Tahoma', sans-serif; text-shadow: 2px 2px 4px black;
+        #online-counter { 
+            position: absolute; top: 12px; right: 20px; 
+            font-size: 36px; font-weight: bold; z-index: 50; 
+            text-shadow: 2px 2px 6px black; font-family: 'Comic Sans MS'; 
+            animation: rainbow-cycle 2s linear infinite; 
         }
+        @keyframes rainbow-cycle { 0% { color: red; } 16% { color: orange; } 33% { color: yellow; } 50% { color: green; } 66% { color: blue; } 83% { color: indigo; } 100% { color: red; } }
+
+        /* UI PANELS */
+        #login-screen, #death-screen { position: absolute; inset: 0; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 200; }
+        #delete-acc-btn { position: absolute; top: 10px; left: 10px; background: #c00; color: white; border: 2px solid black; padding: 10px 16px; cursor: pointer; z-index: 101; font-weight: bold; }
+
+        /* ERROR OVERLAY */
+        #error-overlay { position: absolute; inset: 0; background: rgba(255,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 300; }
+        #error-box { background: white; color: black; padding: 50px; border: 10px solid red; text-align: center; box-shadow: 0 0 50px black; }
+        #error-box h2 { color: red; font-size: 60px; margin: 0; font-family: 'Impact'; }
+        #error-btn { margin-top: 30px; padding: 15px 40px; font-size: 25px; font-weight: bold; cursor: pointer; }
+
+        /* CHAT & CHAR SELECT */
+        #chat-container { position: absolute; bottom: 120px; left: 20px; width: 460px; height: 380px; background: rgba(0,0,0,0.9); border: 3px solid #555; z-index: 60; border-radius: 8px; display: flex; flex-direction: column; }
+        #chat-messages { flex: 1; overflow-y: auto; padding: 12px; font-size: 15px; }
+        #chat-customizer { padding: 8px; background: #1a1a1a; display: flex; gap: 8px; }
+        #chat-input { background: #222; border: none; color: white; padding: 14px; outline: none; width: 100%; box-sizing: border-box; }
         
-        #chat-container {
-            position: absolute; bottom: 110px; left: 20px; width: 420px; height: 340px;
-            background: rgba(0,0,0,0.85); border: 3px solid #444; display: flex; flex-direction: column; z-index: 60; border-radius: 4px;
-        }
-        #chat-messages { flex: 1; overflow-y: auto; padding: 12px; color: white; font-size: 14px; }
-        #chat-input { background: #222; border: none; color: white; padding: 12px; outline: none; font-size: 14px; }
+        #char-selector { position: absolute; bottom: 510px; left: 20px; display: flex; gap: 5px; z-index: 60; }
+        .char-btn { padding: 8px 15px; background: #333; color: white; border: 2px solid #666; cursor: pointer; font-weight: bold; }
+        .char-btn:hover { background: #555; }
 
-        #hotbar {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 4px; background: rgba(0,0,0,0.7); padding: 6px; border: 3px solid #555; z-index: 60; border-radius: 4px;
-        }
-        .slot {
-            width: 64px; height: 64px; background: rgba(139, 139, 139, 0.85);
-            border: 3px solid #8b8b8b; display: flex; align-items: center; justify-content: center;
-            font-weight: bold; position: relative; color: white; font-size: 28px;
-            box-shadow: inset 0 0 8px rgba(0,0,0,0.6);
-        }
-        .slot.active { border: 3px solid #fff; box-shadow: 0 0 15px #fff; }
+        /* HOTBAR */
+        #hotbar { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; background: rgba(0,0,0,0.8); padding: 12px; border: 4px solid #666; z-index: 60; border-radius: 10px; }
+        .slot { width: 70px; height: 70px; background: #444; border: 3px solid #888; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; }
+        .slot.active { border-color: #0f0; box-shadow: 0 0 20px #0f0; background: #222; }
 
-        #admin-panel {
-            position: absolute; top: 80px; left: 20px; width: 280px; background: #1e1e2e; border: 2px solid #4a6bff;
-            color: #ddd; padding: 0; display: none; z-index: 100; box-shadow: 0 8px 20px rgba(0,0,0,0.6); border-radius: 6px; overflow: hidden;
-        }
-        .title-bar {
-            background: #0f1428; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; cursor: move;
-        }
-        .content { padding: 12px; }
-        label { display: block; margin: 10px 0; cursor: pointer; }
+        /* ADMIN */
+        #admin-panel { position: absolute; top: 70px; left: 20px; width: 340px; background: #1e1e2e; border: 3px solid #0f0; color: #ddd; display: none; z-index: 100; border-radius: 8px; overflow: hidden; }
+        .gold-tag { background: linear-gradient(90deg, #ffd700, #fff, #ffd700); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gold-slide 2s linear infinite; font-weight: bold; }
+        @keyframes gold-slide { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
     </style>
 </head>
 <body>
 
-    <button id="delete-acc-btn" style="display:none; position:absolute; top:10px; left:10px; background:#ff4444; color:white; border:2px solid black; padding:10px; cursor:pointer; z-index:101;">Päävalikko</button>
+    <button id="delete-acc-btn" style="display:none;">Päävalikko</button>
     <div id="online-counter">Online: 0</div>
+    <audio id="global-audio" loop></audio>
 
-    <!-- LOGIN SCREEN -->
-    <div id="login-screen" style="position:absolute; inset:0; background:rgba(0,0,0,0.9); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:200;">
-        <h1 style="font-family: 'Comic Sans MS'; font-size: 52px; margin-bottom:10px;">SISUGAME</h1>
-        <input type="text" id="username-input" placeholder="Käyttäjänimi..." maxlength="20" style="padding:15px; width:320px; font-size:18px; margin:15px 0;">
-        <button id="login-btn" style="padding:18px 80px; font-size:24px; font-weight:bold; cursor:pointer; background:#4a6bff; border:none; color:white;">PELA A</button>
-        <p id="error-msg" style="color:red; font-weight:bold; margin-top:10px;"></p>
-    </div>
-
-    <!-- ADMIN PANEL -->
-    <div id="admin-panel">
-        <div class="title-bar" id="admin-title">
-            <span>Sisu Admin Panel</span>
-            <button id="close-admin" style="background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;">×</button>
-        </div>
-        <div class="content">
-            <label><input type="checkbox" id="fly-hack"> Lentotila</label>
-            <label><input type="checkbox" id="gun-hack"> Ase (tulossa)</label>
+    <div id="error-overlay">
+        <div id="error-box">
+            <h2>?MITÄ YRITÄT</h2>
+            <button id="error-btn" disabled>ODOTA...</button>
         </div>
     </div>
 
-    <div id="chat-container">
-        <div id="chat-messages"></div>
-        <input type="text" id="chat-input" placeholder="Kirjoita viesti...">
+    <div id="login-screen">
+        <h1 style="font-size:70px; font-family:'Comic Sans MS'; color:#ff0; margin:0;">SISUGAME</h1>
+        <input type="text" id="username-input" placeholder="Käyttäjänimi..." maxlength="20" style="padding:15px; width:350px; font-size:20px;">
+        <button id="login-btn" style="padding:20px 100px; font-size:25px; font-weight:bold; background:#0a0; color:white; border:none; cursor:pointer; margin-top:20px;">PELAAN NYT</button>
+        <p id="error-msg" style="color:red; font-weight:bold;"></p>
     </div>
 
-    <div id="hotbar">
-        <div class="slot active" id="slot1"><span>1</span></div>
-        <div class="slot" id="slot2"><span>2</span></div>
-        <div class="slot" id="slot3"><span>3</span></div>
+    <div id="death-screen" style="display:none;">
+        <h1 style="color:red; font-size:60px; font-family: Impact;">kuolit hahahahahahahahaha</h1>
+        <button onclick="location.reload()" style="padding:20px 40px; font-size:20px;">TEE UUSI TILI</button>
     </div>
 
-    <canvas id="gameCanvas"></canvas>
+    <div id="game-ui" style="display:none;">
+        <div id="admin-panel">
+            <div style="background:#0a0f1f; padding:10px; font-weight:bold; display:flex; justify-content:space-between;">
+                <span>🔧 EELASKA ADMIN</span>
+                <button onclick="document.getElementById('admin-panel').style.display='none'" style="background:none; border:none; color:red; cursor:pointer; font-size: 20px;">X</button>
+            </div>
+            <div style="padding:15px;">
+                <label><input type="checkbox" id="fly-hack"> ✈️ Lentotila</label><br>
+                <label><input type="checkbox" id="gun-hack"> 🔫 Ase (Vasen klik)</label><br><hr>
+                <button id="play-global" style="width:100%; padding:10px; margin-bottom:5px; cursor:pointer;">▶ SOITA RICKROLL</button>
+                <button id="stop-global" style="width:100%; padding:10px; cursor:pointer;">⏹ STOP</button>
+            </div>
+        </div>
+
+        <div id="char-selector">
+            <button class="char-btn" onclick="changeChar('stickman')">Tikku</button>
+            <button class="char-btn" onclick="changeChar('redstickman')">Punainen</button>
+            <button class="char-btn" onclick="changeChar('mario')">Mario</button>
+            <button class="char-btn" onclick="changeChar('princess')">Prinsessa</button>
+        </div>
+
+        <div id="chat-container">
+            <div id="chat-messages"></div>
+            <div id="chat-customizer">
+                <select id="font-select"><option value="Tahoma">Tahoma</option><option value="'Comic Sans MS'">Comic Sans</option></select>
+                <select id="color-select"><option value="#fff">White</option><option value="rainbow">🌈 Rainbow</option></select>
+            </div>
+            <input type="text" id="chat-input" placeholder="Kirjoita viesti...">
+        </div>
+
+        <div id="hotbar">
+            <div class="slot active" id="slot1">1<br>Wood</div>
+            <div class="slot" id="slot2">2<br>Stone</div>
+            <div class="slot" id="slot3">3<br>Eraser</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
@@ -101,337 +129,220 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        const VERSION = "v2.3"; // Muuta tätä kun teet isoja muutoksia
         const BLOCK_SIZE = 60;
-        const GRAVITY = 0.72;
-        const JUMP_FORCE = -16.8;
-        const PLAYER_W = 36;
-        const PLAYER_H = 110;
+        const WORLD_LIMIT_X = 50; 
+        const CEILING_LIMIT = -25;
+        const PLAYER_W = 40;
+        const PLAYER_H = 80;
 
-        let myData = null;
-        let pLocal = null;
-        let players = {};
-        let blocks = {};
-        let keys = {};
-        let lastAction = 0;
-        let cameraX = 0;
+        let myData = null, pLocal = null, players = {}, blocks = {}, keys = {}, cameraX = 0, cameraY = 0;
+        let isErrorVisible = false, myBullets = [];
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const globalAudio = document.getElementById('global-audio');
 
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.addEventListener('resize', resize);
         resize();
 
-        // ==================== BETTER PHYSICS & COLLISION ====================
-        function getPlayerBounds(x, y) {
-            return {
-                left: x,
-                right: x + PLAYER_W,
-                top: y,
-                bottom: y + PLAYER_H
-            };
+        window.changeChar = (type) => { if(pLocal) pLocal.char = type; };
+
+        function showError() {
+            isErrorVisible = true;
+            const overlay = document.getElementById('error-overlay');
+            const btn = document.getElementById('error-btn');
+            overlay.style.display = 'flex';
+            let timer = 2;
+            btn.disabled = true;
+            btn.innerText = `ODOTA... (${timer})`;
+            const int = setInterval(() => {
+                timer--;
+                btn.innerText = `ODOTA... (${timer})`;
+                if(timer <= 0) { clearInterval(int); btn.disabled = false; btn.innerText = "YMMÄRRETTY!"; }
+            }, 1000);
+        }
+        document.getElementById('error-btn').onclick = () => { document.getElementById('error-overlay').style.display = 'none'; isErrorVisible = false; };
+
+        // --- DRAWING FUNCTIONS ---
+        function drawMario(ctx, x, y) {
+            ctx.fillStyle = "red"; ctx.fillRect(x + 5, y, 30, 10); ctx.fillRect(x + 5, y - 5, 20, 5); // Hat
+            ctx.fillStyle = "#FFCC99"; ctx.fillRect(x + 8, y + 10, 24, 20); // Face
+            ctx.fillStyle = "black"; ctx.fillRect(x + 22, y + 14, 4, 4); ctx.fillRect(x + 18, y + 22, 10, 4); // Eyes/Moustache
+            ctx.fillStyle = "red"; ctx.fillRect(x + 5, y + 30, 30, 20); // Shirt
+            ctx.fillStyle = "blue"; ctx.fillRect(x + 5, y + 50, 30, 25); // Overalls
+            ctx.fillStyle = "yellow"; ctx.fillRect(x + 10, y + 55, 5, 5); ctx.fillRect(x + 25, y + 55, 5, 5); // Buttons
+            ctx.fillStyle = "#663300"; ctx.fillRect(x + 2, y + 75, 12, 8); ctx.fillRect(x + 26, y + 75, 12, 8); // Shoes
         }
 
-        function checkCollision(x, y) {
-            const b = getPlayerBounds(x, y);
-            for (let id in blocks) {
-                const bl = blocks[id];
-                const bx = bl.gx * BLOCK_SIZE;
-                const by = bl.gy * BLOCK_SIZE;
-                if (!(b.right < bx || b.left > bx + BLOCK_SIZE || b.bottom < by || b.top > by + BLOCK_SIZE)) {
-                    return true;
-                }
-            }
-            return false;
+        function drawPrincess(ctx, x, y) {
+            ctx.fillStyle = "pink"; ctx.beginPath(); ctx.moveTo(x+20, y+15); ctx.lineTo(x-10, y+80); ctx.lineTo(x+50, y+80); ctx.fill(); // Dress
+            ctx.fillStyle = "yellow"; ctx.beginPath(); ctx.arc(x+20, y+15, 18, 0, 7); ctx.fill(); // Hair
+            ctx.fillStyle = "gold"; ctx.fillRect(x+10, y, 20, 5); // Crown
         }
 
-        function worldToGrid(wx, wy) {
-            return {
-                gx: Math.floor(wx / BLOCK_SIZE),
-                gy: Math.floor(wy / BLOCK_SIZE)
-            };
+        function drawStickman(p, sx, sy) {
+            ctx.strokeStyle = p.char === 'redstickman' ? 'red' : 'black';
+            ctx.lineWidth = 6;
+            ctx.beginPath(); ctx.arc(sx+20, sy+15, 12, 0, 7); ctx.stroke(); // Head
+            ctx.beginPath(); ctx.moveTo(sx+20, sy+27); ctx.lineTo(sx+20, sy+55); ctx.stroke(); // Body
+            const w = Math.sin(Date.now()*0.012)*15;
+            ctx.beginPath(); ctx.moveTo(sx+20, sy+55); ctx.lineTo(sx+20+w, sy+80); ctx.stroke(); // Leg L
+            ctx.beginPath(); ctx.moveTo(sx+20, sy+55); ctx.lineTo(sx+20-w, sy+80); ctx.stroke(); // Leg R
+            ctx.beginPath(); ctx.moveTo(sx+20, sy+35); ctx.lineTo(sx+40, sy+45-w/2); ctx.stroke(); // Arm
         }
 
-        // ==================== FIREBASE USERNAME PERSISTENCE ====================
-        async function getOrCreateUser(rawName) {
-            const lower = rawName.toLowerCase();
-            const snap = await get(ref(db, 'usernames'));
-            const existing = snap.val() || {};
-
-            for (let name in existing) {
-                if (name.toLowerCase() === lower) {
-                    return { id: existing[name], name: name };
-                }
-            }
-
-            const newId = "u_" + Date.now();
-            await set(ref(db, `usernames/${rawName}`), newId);
-            return { id: newId, name: rawName };
-        }
-
-        // ==================== GAME INIT ====================
-        async function initGame(savedData) {
+        document.getElementById('login-btn').onclick = async () => {
+            const name = document.getElementById('username-input').value.trim();
+            if(name.length < 3) return;
+            myData = { id: "u_" + Date.now(), name: name };
             document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('game-ui').style.display = 'block';
             document.getElementById('delete-acc-btn').style.display = 'block';
+            initGame();
+        };
 
-            const user = await getOrCreateUser(savedData.name);
-            myData = { ...user, char: savedData.char || 'stickman' };
-
-            // Save with version
-            localStorage.setItem('sisu_user', JSON.stringify({
-                ...myData,
-                version: VERSION
-            }));
-
-            const isOwner = myData.name.toLowerCase() === "eelaska";
-            if (isOwner) document.getElementById('admin-panel').style.display = 'block';
-
-            pLocal = {
-                pixelX: 400,
-                pixelY: 200,
-                vx: 0,
-                vy: 0,
-                facing: 1,
-                walking: false,
-                slot: 1,
-                char: myData.char
-            };
-
+        function initGame() {
             const pRef = ref(db, `players/${myData.id}`);
-            set(pRef, { ...pLocal, name: myData.name });
-            onDisconnect(pRef).remove();
+            pLocal = { x: 0, y: 0, vx: 0, vy: 0, char: 'stickman', slot: 1, name: myData.name, facing: 1 };
+            if(myData.name.toLowerCase()==="eelaska") document.getElementById('admin-panel').style.display = 'block';
 
-            onValue(ref(db, 'players'), s => {
-                players = s.val() || {};
-                document.getElementById('online-counter').innerText = `Online: ${Object.keys(players).length}`;
+            onValue(ref(db, 'players'), s => players = s.val() || {});
+            onValue(ref(db, 'blocks'), s => blocks = s.val() || {});
+            onValue(ref(db, 'server/globalMusic'), s => {
+                const m = s.val(); if(!m) return;
+                if(globalAudio.src !== m.src) globalAudio.src = m.src;
+                m.playing ? globalAudio.play().catch(()=>{}) : globalAudio.pause();
             });
 
-            onValue(ref(db, 'blocks'), s => blocks = s.val() || {});
+            document.getElementById('play-global').onclick = () => set(ref(db, 'server/globalMusic'), { src: 'https://github.com/Eelaska/sisugame/raw/main/rickroll.mp3', playing: true });
+            document.getElementById('stop-global').onclick = () => set(ref(db, 'server/globalMusic'), { playing: false });
 
-            // Chat
             const chatIn = document.getElementById('chat-input');
             chatIn.onkeydown = e => {
-                if (e.key === 'Enter' && chatIn.value.trim()) {
-                    push(ref(db, 'chat'), {
-                        sender: myData.name,
-                        text: chatIn.value.trim(),
-                        time: new Date().toLocaleTimeString()
-                    });
+                if(e.key==='Enter' && chatIn.value.trim()){
+                    push(ref(db, 'chat'), { sender: myData.name, text: chatIn.value, col: document.getElementById('color-select').value });
                     chatIn.value = "";
                 }
             };
-
             onValue(ref(db, 'chat'), s => {
-                const box = document.getElementById('chat-messages');
-                box.innerHTML = "";
-                Object.values(s.val() || {}).slice(-30).forEach(m => {
-                    box.innerHTML += `<div><b>${m.sender}:</b> ${m.text}</div>`;
+                const box = document.getElementById('chat-messages'); box.innerHTML = "";
+                Object.values(s.val()||{}).slice(-25).forEach(m => {
+                    const tag = m.sender.toLowerCase()==='eelaska' ? '<span class="gold-tag">[OWNER]</span> ' : '';
+                    const colStyle = m.col === 'rainbow' ? 'animation: rainbow-cycle 1s linear infinite; font-weight:bold;' : `color:${m.col}`;
+                    box.innerHTML += `<div>${tag}<b>${m.sender}:</b> <span style="${colStyle}">${m.text}</span></div>`;
                 });
                 box.scrollTop = box.scrollHeight;
             });
 
-            // Hotbar
-            document.querySelectorAll('.slot').forEach((slot, i) => {
-                slot.onclick = () => {
-                    pLocal.slot = i + 1;
-                    document.querySelectorAll('.slot').forEach(s => s.classList.remove('active'));
-                    slot.classList.add('active');
-                };
-            });
-
-            window.onkeydown = e => {
-                if (document.activeElement.id === 'chat-input') return;
-                keys[e.key.toLowerCase()] = true;
-                if (['1','2','3'].includes(e.key)) {
-                    pLocal.slot = parseInt(e.key);
-                    document.querySelectorAll('.slot').forEach(s => s.classList.remove('active'));
-                    document.getElementById('slot' + e.key).classList.add('active');
-                }
-            };
-            window.onkeyup = e => keys[e.key.toLowerCase()] = false;
-
-            // ==================== DRAW ====================
-            function drawPlayer(p, x, y) {
-                const swing = p.walking ? Math.sin(Date.now() * 0.018) * 9 : 0;
-                ctx.strokeStyle = p.char === 'redstickman' ? '#c00' : '#111';
-                ctx.lineWidth = 8;
-
-                // head
-                ctx.beginPath();
-                ctx.arc(x + 18, y + 28, 17, 0, Math.PI * 2);
-                ctx.stroke();
-
-                // body
-                ctx.beginPath();
-                ctx.moveTo(x + 18, y + 45);
-                ctx.lineTo(x + 18, y + 88);
-                ctx.stroke();
-
-                // arms
-                ctx.beginPath();
-                ctx.moveTo(x + 18, y + 58);
-                ctx.lineTo(x + 18 - p.facing * 22 + swing, y + 75);
-                ctx.moveTo(x + 18, y + 58);
-                ctx.lineTo(x + 18 + p.facing * 22 - swing, y + 75);
-                ctx.stroke();
-
-                // legs
-                ctx.beginPath();
-                ctx.moveTo(x + 18, y + 88);
-                ctx.lineTo(x + 8, y + 118);
-                ctx.moveTo(x + 18, y + 88);
-                ctx.lineTo(x + 28, y + 118);
-                ctx.stroke();
-
-                ctx.fillStyle = "white";
-                ctx.font = "bold 16px Tahoma";
-                ctx.textAlign = "center";
-                ctx.fillText(p.name, x + 18, y - 5);
-            }
-
-            // ==================== MAIN LOOP ====================
             function loop() {
-                const fly = isOwner && document.getElementById('fly-hack')?.checked;
+                if(!isErrorVisible) {
+                    if(keys['a']) { pLocal.vx = -7; pLocal.facing = -1; }
+                    else if(keys['d']) { pLocal.vx = 7; pLocal.facing = 1; }
+                    else pLocal.vx *= 0.8;
+                    
+                    const fly = document.getElementById('fly-hack')?.checked && myData.name.toLowerCase()==='eelaska';
+                    if(fly) { 
+                        if(keys['w']) pLocal.vy = -7; else if(keys['s']) pLocal.vy = 7; else pLocal.vy = 0; 
+                    } else { pLocal.vy += 0.8; }
 
-                // Movement
-                if (keys['a']) { pLocal.vx = -6.5; pLocal.facing = -1; pLocal.walking = true; }
-                else if (keys['d']) { pLocal.vx = 6.5; pLocal.facing = 1; pLocal.walking = true; }
-                else { pLocal.vx *= 0.78; pLocal.walking = false; }
+                    pLocal.x += pLocal.vx; pLocal.y += pLocal.vy;
+                    const G = canvas.height - 150;
+                    if(pLocal.y > G) { pLocal.y = G; pLocal.vy = 0; }
+                    if(keys['w'] && pLocal.vy === 0 && !fly) pLocal.vy = -18;
 
-                if (!fly) pLocal.vy += GRAVITY;
-                else pLocal.vy = keys['w'] ? -9 : keys['s'] ? 9 : 0;
+                    // WORLD BOUNDS
+                    if(pLocal.x < -WORLD_LIMIT_X*BLOCK_SIZE) pLocal.x = -WORLD_LIMIT_X*BLOCK_SIZE;
+                    if(pLocal.x > WORLD_LIMIT_X*BLOCK_SIZE) pLocal.x = WORLD_LIMIT_X*BLOCK_SIZE;
 
-                // Horizontal collision
-                let nx = pLocal.pixelX + pLocal.vx;
-                if (!checkCollision(nx, pLocal.pixelY)) pLocal.pixelX = nx;
-
-                // Vertical collision
-                let ny = pLocal.pixelY + pLocal.vy;
-                if (!checkCollision(pLocal.pixelX, ny)) {
-                    pLocal.pixelY = ny;
-                } else {
-                    if (pLocal.vy > 0) pLocal.vy = 0;
-                    else pLocal.vy = 1;
+                    cameraX = pLocal.x - canvas.width/2;
+                    cameraY = pLocal.y - canvas.height/2;
+                    update(pRef, pLocal);
                 }
 
-                // Ground limit
-                if (pLocal.pixelY > canvas.height - 150) {
-                    pLocal.pixelY = canvas.height - 150;
-                    pLocal.vy = 0;
-                }
-
-                // Jump
-                if (keys['w'] && Math.abs(pLocal.vy) < 4) pLocal.vy = JUMP_FORCE;
-
-                // Update to Firebase
-                update(ref(db, `players/${myData.id}`), { ...pLocal, name: myData.name });
-
-                // Camera
-                cameraX = Math.max(0, pLocal.pixelX - canvas.width / 2);
-
-                // Render
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // Ground
-                ctx.fillStyle = "#1e5c1e";
-                ctx.fillRect(0, canvas.height - 80, canvas.width, 200);
-
-                // Blocks
-                for (let id in blocks) {
-                    const b = blocks[id];
-                    const sx = b.gx * BLOCK_SIZE - cameraX;
-                    const sy = b.gy * BLOCK_SIZE;
-                    ctx.fillStyle = b.type === 'Wood' ? '#8B5A2B' : '#555577';
-                    ctx.fillRect(sx, sy, BLOCK_SIZE, BLOCK_SIZE);
-                    ctx.strokeStyle = "#222";
-                    ctx.lineWidth = 4;
-                    ctx.strokeRect(sx, sy, BLOCK_SIZE, BLOCK_SIZE);
-                }
-
-                // Other players
-                for (let id in players) {
-                    if (id !== myData.id) {
-                        const p = players[id];
-                        drawPlayer(p, p.pixelX - cameraX, p.pixelY);
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                
+                // --- DRAW WORLD LIMITS ---
+                ctx.fillStyle = "#800"; // Brick Red
+                for(let i = -40; i < 20; i++) {
+                    let y = i * BLOCK_SIZE;
+                    let leftX = -WORLD_LIMIT_X*BLOCK_SIZE - 60;
+                    let rightX = WORLD_LIMIT_X*BLOCK_SIZE + 60;
+                    ctx.fillRect(leftX - cameraX, y - cameraY, 60, 60);
+                    ctx.strokeRect(leftX - cameraX, y - cameraY, 60, 60);
+                    ctx.fillRect(rightX - cameraX, y - cameraY, 60, 60);
+                    ctx.strokeRect(rightX - cameraX, y - cameraY, 60, 60);
+                    
+                    if(i === 0) {
+                        ctx.fillStyle = "white"; ctx.font = "bold 20px Tahoma";
+                        ctx.fillText("MAAILMAN LOPPU ):", leftX - 220 - cameraX, y + 35 - cameraY);
+                        ctx.fillText("MAAILMAN LOPPU ):", rightX + 80 - cameraX, y + 35 - cameraY);
+                        ctx.fillStyle = "#800";
                     }
                 }
+                // CEILING
+                for(let i = -WORLD_LIMIT_X-2; i <= WORLD_LIMIT_X+2; i++) {
+                    ctx.fillRect(i*BLOCK_SIZE - cameraX, CEILING_LIMIT*BLOCK_SIZE - cameraY, 60, 60);
+                    ctx.strokeRect(i*BLOCK_SIZE - cameraX, CEILING_LIMIT*BLOCK_SIZE - cameraY, 60, 60);
+                }
 
-                // Local player
-                drawPlayer(pLocal, pLocal.pixelX - cameraX, pLocal.pixelY);
+                // --- DRAW BLOCKS ---
+                for(let id in blocks) {
+                    const b = blocks[id];
+                    ctx.fillStyle = b.type==='Wood' ? '#8B4513' : '#555';
+                    ctx.fillRect(b.x - cameraX, b.y - cameraY, 60, 60);
+                    ctx.strokeStyle = "black"; ctx.lineWidth = 2;
+                    ctx.strokeRect(b.x - cameraX, b.y - cameraY, 60, 60);
+                }
+
+                // --- DRAW PLAYERS ---
+                for(let id in players) {
+                    const p = players[id]; const sx = p.x - cameraX, sy = p.y - cameraY;
+                    if(p.char==='mario') drawMario(ctx, sx, sy);
+                    else if(p.char==='princess') drawPrincess(ctx, sx, sy);
+                    else drawStickman(p, sx, sy);
+                    ctx.fillStyle="white"; ctx.font="bold 14px Tahoma"; ctx.textAlign="center"; 
+                    ctx.fillText(p.name, sx+20, sy-15);
+                }
 
                 requestAnimationFrame(loop);
             }
 
-            // Right click build / erase
-            canvas.addEventListener('contextmenu', e => {
-                e.preventDefault();
-                if (Date.now() - lastAction < 160) return;
-                lastAction = Date.now();
-
-                const rect = canvas.getBoundingClientRect();
-                const mx = e.clientX - rect.left + cameraX;
-                const my = e.clientY - rect.top;
-
-                const g = worldToGrid(mx, my);
-
-                if (pLocal.slot === 3) {
-                    for (let id in blocks) {
-                        const b = blocks[id];
-                        if (b.gx === g.gx && b.gy === g.gy) {
-                            remove(ref(db, `blocks/${id}`));
-                            break;
-                        }
-                    }
+            canvas.oncontextmenu = e => {
+                e.preventDefault(); if(isErrorVisible) return;
+                const mx = e.clientX + cameraX, my = e.clientY + cameraY;
+                const gx = Math.floor(mx/60)*60, gy = Math.floor(my/60)*60;
+                
+                // BOUNDS CHECK
+                if(gx <= -WORLD_LIMIT_X*60 || gx >= WORLD_LIMIT_X*60 || gy <= CEILING_LIMIT*60) return showError();
+                
+                if(pLocal.slot === 3) {
+                    for(let id in blocks) if(Math.abs(blocks[id].x-gx)<10 && Math.abs(blocks[id].y-gy)<10) remove(ref(db, `blocks/${id}`));
                 } else {
-                    // Simple placement
-                    if (g.gx < -3 || g.gx > 3) {
-                        push(ref(db, 'blocks'), {
-                            gx: g.gx,
-                            gy: g.gy,
-                            type: pLocal.slot === 1 ? 'Wood' : 'Stone'
-                        });
-                    }
+                    push(ref(db, 'blocks'), { x: gx, y: gy, type: pLocal.slot===1?'Wood':'Stone' });
                 }
-            });
+            };
+            
+            canvas.onclick = (e) => {
+                if(myData.name.toLowerCase()==="eelaska" && document.getElementById('gun-hack').checked) {
+                    for(let id in players) if(id!==myData.id) update(ref(db, `players/${id}`), {dead:true});
+                }
+            };
 
             loop();
         }
 
-        // ==================== LOGIN ====================
-        document.getElementById('login-btn').onclick = async () => {
-            let name = document.getElementById('username-input').value.trim();
-            if (!name) return;
-
-            document.getElementById('error-msg').innerText = "Yhdistetään...";
-            try {
-                await initGame({ name: name });
-            } catch (e) {
-                document.getElementById('error-msg').innerText = "Virhe yhteydessä!";
+        const keys = {};
+        window.onkeydown = e => {
+            keys[e.key.toLowerCase()] = true;
+            if(['1','2','3'].includes(e.key)) {
+                pLocal.slot = +e.key;
+                document.querySelectorAll('.slot').forEach(s=>s.classList.remove('active'));
+                document.getElementById('slot'+e.key).classList.add('active');
             }
         };
-
-        // Load saved user
-        const saved = JSON.parse(localStorage.getItem('sisu_user'));
-        if (saved && saved.version === VERSION) {
-            initGame(saved);
-        } else if (saved) {
-            // Version changed → force new login but keep name
-            document.getElementById('username-input').value = saved.name;
-        }
-
-        document.getElementById('delete-acc-btn').onclick = () => {
-            localStorage.removeItem('sisu_user');
-            location.reload();
-        };
-
-        // Admin panel close
-        document.getElementById('close-admin').onclick = () => {
-            document.getElementById('admin-panel').style.display = 'none';
-        };
+        window.onkeyup = e => keys[e.key.toLowerCase()] = false;
+        document.getElementById('delete-acc-btn').onclick = () => { localStorage.clear(); location.reload(); };
     </script>
 </body>
 </html>
