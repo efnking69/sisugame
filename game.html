@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>uwu</title>
+    <style>
+        body {
+            margin: 0;
+            /* Changed to white background */
+            background-color: #f0f0f0; 
+            color: #121212;
+            font-family: 'Tahoma', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        /* LOGIN SCREEN STYLES */
+        #login-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        #login-title {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            /* Cool sliding rainbow text for login */
+            background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+            background-size: 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow 5s linear infinite;
+        }
+        @keyframes rainbow { 0% { background-position: 0% 50%; } 100% { background-position: 400% 50%; } }
+        
+        input {
+            padding: 10px; font-size: 18px; border: 2px solid #ccc; border-radius: 5px; margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px; font-size: 18px; cursor: pointer; background-color: #121212; color: white; border: none; border-radius: 5px;
+        }
+        button:hover { background-color: #333; }
+        #error-msg { color: red; margin-top: 10px; font-weight: bold; }
+
+        /* GAME UI STYLES */
+        #game-ui { display: none; text-align: center; width: 100%; }
+        canvas {
+            background-color: #ffffff; /* White game canvas */
+            border: 4px solid #121212;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div id="login-title">uwu</div>
+        <input type="text" id="username-input" placeholder="Enter Username..." maxlength="12">
+        <button id="login-btn">Play Game</button>
+        <div id="error-msg"></div>
+    </div>
+
+    <div id="game-ui">
+        <h3>Controls: WASD to move. Press '1' to hold Wood. Right-Click to place.</h3>
+        <canvas id="gameCanvas" width="900" height="600"></canvas>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, set, get, onValue, onDisconnect, push } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // YOUR EXACT FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvqYVI8UT4jZVHdj-1sT2cAYQYFzMbZ1k",
+            authDomain: "gamesisu-837b9.firebaseapp.com",
+            projectId: "gamesisu-837b9",
+            storageBucket: "gamesisu-837b9.firebasestorage.app",
+            messagingSenderId: "737275327449",
+            appId: "1:737275327449:web:952b3852484917ccdcdfc8",
+            measurementId: "G-Q1XEE6TTRV",
+            // Added databaseURL manually just in case v10 needs it to find your RTDB
+            databaseURL: "https://gamesisu-837b9-default-rtdb.firebaseio.com/" 
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // --- TITLE CYCLER ---
+        const titles = ["uwu", "heisenberg THE GAME", "xd", "does anyone even read these?"];
+        let titleIdx = 0;
+        setInterval(() => {
+            titleIdx = (titleIdx + 1) % titles.length;
+            document.getElementById("login-title").innerText = titles[titleIdx];
+            document.title = titles[titleIdx];
+        }, 3000);
+
+        // --- LOGIN LOGIC ---
+        let myUsername = "";
+        let playerId = "";
+        const loginBtn = document.getElementById("login-btn");
+        const usernameInput = document.getElementById("username-input");
+        const errorMsg = document.getElementById("error-msg");
+
+        loginBtn.addEventListener("click", async () => {
+            const desiredName = usernameInput.value.trim();
+            if (desiredName.length < 2) {
+                errorMsg.innerText = "Username too short!";
+                return;
+            }
+
+            // Check if username exists in Firebase
+            const usernameRef = ref(db, `usernames/${desiredName}`);
+            const snapshot = await get(usernameRef);
+
+            if (snapshot.exists()) {
+                errorMsg.innerText = "Username is already taken! Try another.";
+            } else {
+                // Username is free! Let's claim it.
+                myUsername = desiredName;
+                playerId = "user_" + Date.now();
+                
+                // Claim name and set up auto-delete on disconnect
+                set(usernameRef, true);
+                onDisconnect(usernameRef).remove(); 
+
+                // Hide login, show game
+                document.getElementById("login-screen").style.display = "none";
+                document.getElementById("game-ui").style.display = "block";
+                startGame();
+            }
+        });
+
+        // --- GAME ENGINE ---
+        function startGame() {
+            const canvas = document.getElementById("gameCanvas");
+            const ctx = canvas.getContext("2d");
+
+            // Local Player Data
+            let myPlayer = {
+                id: playerId,
+                username: myUsername,
+                x: 100, y: 100,
+                color: `hsl(${Math.random() * 360}, 100%, 40%)`, // slightly darker colors to see on white
+                size: 30,
+                facingRight: true,
+                dy: 0 // gravity velocity
+            };
+
+            let players = {};
+            let worldBlocks = {};
+            let selectedBlock = 0; // 0 = none, 1 = wood
+
+            // FIREBASE SYNC: Players
+            const myPlayerRef = ref(db, `players/${playerId}`);
+            set(myPlayerRef, myPlayer);
+            onDisconnect(myPlayerRef).remove(); // Delete player block when leaving
+
+            onValue(ref(db, `players`), (snapshot) => {
+                players = snapshot.val() || {};
+            });
+
+            // FIREBASE SYNC: Blocks
+            onValue(ref(db, `blocks`), (snapshot) => {
+                worldBlocks = snapshot.val() || {};
+            });
+
+            // INPUTS
+            const keys = {};
+            window.addEventListener("keydown", (e) => {
+                keys[e.key.toLowerCase()] = true;
+                if (e.key === '1') selectedBlock = 1; // Equip Wood
+                if (e.key === '2') selectedBlock = 0; // Unequip
+            });
+            window.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
+
+            // RIGHT CLICK TO PLACE BLOCK
+            canvas.addEventListener("contextmenu", (e) => {
+                e.preventDefault(); // Stop normal browser right-click menu
+                
+                if (selectedBlock === 1) {
+                    // Calculate position directly in front of player
+                    const blockX = myPlayer.facingRight ? myPlayer.x + myPlayer.size + 5 : myPlayer.x - 35;
+                    const blockY = myPlayer.y;
+
+                    // Send new block to Firebase
+                    const newBlockRef = push(ref(db, `blocks`)); 
+                    set(newBlockRef, {
+                        x: blockX,
+                        y: blockY,
+                        type: 'wood'
+                    });
+                }
+            });
+
+            // GAME LOOP
+            const speed = 6;
+            const gravity = 0.8;
+
+            function update() {
+                let moved = false;
+
+                // Physics (Left/Right)
+                if (keys["a"]) { myPlayer.x -= speed; myPlayer.facingRight = false; moved = true; }
+                if (keys["d"]) { myPlayer.x += speed; myPlayer.facingRight = true; moved = true; }
+                
+                // Gravity & Floor
+                myPlayer.dy += gravity;
+                myPlayer.y += myPlayer.dy;
+                let isJumping = true;
+
+                // Infinite basic floor at bottom so you don't fall forever
+                if (myPlayer.y >= canvas.height - myPlayer.size) {
+                    myPlayer.y = canvas.height - myPlayer.size;
+                    myPlayer.dy = 0;
+                    isJumping = false;
+                }
+
+                // Jump
+                if (keys["w"] && !isJumping) {
+                    myPlayer.dy = -14;
+                    isJumping = true;
+                    moved = true;
+                }
+                if(myPlayer.dy !== 0 || isJumping) moved = true;
+
+                // Send position to server if we moved
+                if (moved) set(myPlayerRef, myPlayer);
+
+                // --- DRAWING ---
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // 1. Draw World Blocks
+                for (let id in worldBlocks) {
+                    let b = worldBlocks[id];
+                    if (b.type === 'wood') {
+                        ctx.fillStyle = "#8B4513"; // Wood color
+                        ctx.fillRect(b.x, b.y, 30, 30);
+                        // Wood outline
+                        ctx.strokeStyle = "#5C2E0B";
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(b.x, b.y, 30, 30);
+                    }
+                }
+
+                // 2. Draw "Ghost Block" (Preview)
+                if (selectedBlock === 1) {
+                    const ghostX = myPlayer.facingRight ? myPlayer.x + myPlayer.size + 5 : myPlayer.x - 35;
+                    const ghostY = myPlayer.y;
+                    
+                    ctx.fillStyle = "rgba(139, 69, 19, 0.5)"; // Transparent wood
+                    ctx.fillRect(ghostX, ghostY, 30, 30);
+                    ctx.strokeStyle = "rgba(92, 46, 11, 0.5)";
+                    ctx.strokeRect(ghostX, ghostY, 30, 30);
+                }
+
+                // 3. Draw All Players & Nametags
+                for (let id in players) {
+                    const p = players[id];
+                    
+                    // Player Square
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(p.x, p.y, p.size, p.size);
+
+                    // Outline for our player
+                    if (id === playerId) {
+                        ctx.strokeStyle = "#000000";
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(p.x, p.y, p.size, p.size);
+                    }
+
+                    // Draw Username Text Above Player
+                    ctx.fillStyle = "#000000"; // Black text
+                    ctx.font = "bold 14px Tahoma";
+                    ctx.textAlign = "center";
+                    ctx.fillText(p.username, p.x + (p.size / 2), p.y - 8);
+                }
+
+                requestAnimationFrame(update);
+            }
+
+            update();
+        }
+    </script>
+</body>
+</html>
